@@ -8,6 +8,8 @@ import { revalidatePath } from "next/cache";
 import { eq, or, and, sql } from "drizzle-orm";
 import crypto from "crypto";
 import { getClientIp, checkRateLimit, RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
+import { getMemberNetPositionInGroup } from "@/features/balances";
+import { fromMinorUnits } from "@/lib/money";
 
 export async function createGroupAction(formData: FormData) {
   const session = await getUserSession();
@@ -371,3 +373,150 @@ export async function joinGroupByTokenAction(token: string) {
     return { success: false, error: err.message || "Failed to join group" };
   }
 }
+
+export async function leaveGroupAction(groupId: string) {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Authentication required" };
+  }
+
+  try {
+    // 1. Verify user is in group
+    const [membership] = await db
+      .select()
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, groupId),
+          eq(groupMembers.userId, session.id),
+          eq(groupMembers.status, "active")
+        )
+      )
+      .limit(1);
+
+    if (!membership) {
+      return { success: false, error: "You are not an active member of this group." };
+    }
+
+    if (membership.role === "owner") {
+      return {
+        success: false,
+        error: "Group owners cannot leave without transferring ownership first.",
+      };
+    }
+
+    // 2. Financial check: is user net balance zero in this group?
+    const netPosition = await getMemberNetPositionInGroup(groupId, session.id);
+    if (netPosition < BigInt(0)) {
+      const debtMajor = Math.abs(fromMinorUnits(netPosition)).toFixed(2);
+      return {
+        success: false,
+        error: `Cannot leave group: You have an outstanding debt of ${debtMajor} in this group. Please settle up first.`,
+      };
+    }
+
+    if (netPosition > BigInt(0)) {
+      const creditMajor = fromMinorUnits(netPosition).toFixed(2);
+      return {
+        success: false,
+        error: `Cannot leave group: Roommates owe you ${creditMajor} in this group. Collect settlements before leaving.`,
+      };
+    }
+
+    // 3. Deactivate membership safely (preserve historical expenses)
+    await db
+      .update(groupMembers)
+      .set({ status: "inactive" })
+      .where(eq(groupMembers.id, membership.id));
+
+    await db.insert(outboxEvents).values({
+      eventType: "group.member_left",
+      payload: {
+        groupId,
+        userId: session.id,
+      },
+    });
+
+    revalidatePath("/groups");
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath("/dashboard");
+    revalidatePath("/balances");
+
+    return { success: true, message: "You have left the group successfully." };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to leave group." };
+  }
+}
+
+export async function updateMemberRoleAction(
+  groupId: string,
+  targetUserId: string,
+  newRole: "admin" | "member"
+) {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Authentication required" };
+  }
+
+  try {
+    // 1. Verify caller is owner
+    const [callerMembership] = await db
+      .select()
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, groupId),
+          eq(groupMembers.userId, session.id),
+          eq(groupMembers.status, "active")
+        )
+      )
+      .limit(1);
+
+    if (!callerMembership || callerMembership.role !== "owner") {
+      return { success: false, error: "Only the group owner can modify member roles." };
+    }
+
+    // 2. Verify target member
+    const [targetMembership] = await db
+      .select()
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, groupId),
+          eq(groupMembers.userId, targetUserId),
+          eq(groupMembers.status, "active")
+        )
+      )
+      .limit(1);
+
+    if (!targetMembership) {
+      return { success: false, error: "Target member not found in group." };
+    }
+
+    if (targetMembership.role === "owner") {
+      return { success: false, error: "Cannot change the group owner's role." };
+    }
+
+    // 3. Update role
+    await db
+      .update(groupMembers)
+      .set({ role: newRole })
+      .where(eq(groupMembers.id, targetMembership.id));
+
+    await db.insert(outboxEvents).values({
+      eventType: "group.role_updated",
+      payload: {
+        groupId,
+        targetUserId,
+        newRole,
+        updatedBy: session.id,
+      },
+    });
+
+    revalidatePath(`/groups/${groupId}`);
+    return { success: true, message: `Member role updated to ${newRole}.` };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update role." };
+  }
+}
+

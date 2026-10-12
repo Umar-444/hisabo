@@ -1,11 +1,13 @@
 "use server";
 
-import { getUserSession, setUserSessionCookie } from "@/lib/auth/user-session";
+import { getUserSession, setUserSessionCookie, clearUserSessionCookie } from "@/lib/auth/user-session";
 import { db } from "@/app/(backend)/_lib/db";
 import { users } from "@/app/(backend)/_lib/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { getAggregatedBalancesQuery } from "@/features/balances";
+import { fromMinorUnits } from "@/lib/money";
 
 export interface SettingsActionResult {
   success: boolean;
@@ -125,3 +127,78 @@ export async function changePasswordAction(
     return { success: false, error: e.message || "Failed to change password." };
   }
 }
+
+export async function updatePreferencesAction(
+  formData: FormData
+): Promise<SettingsActionResult> {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Unauthorized. Please sign in." };
+  }
+
+  const defaultCurrency = formData.get("defaultCurrency")?.toString().trim().toUpperCase() || "SAR";
+  const paymentHandle = formData.get("paymentHandle")?.toString().trim() || null;
+
+  try {
+    await db
+      .update(users)
+      .set({
+        defaultCurrency,
+        paymentHandle,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, session.id));
+
+    revalidatePath("/settings");
+    revalidatePath("/dashboard");
+    return { success: true, message: "App preferences saved successfully." };
+  } catch (e: any) {
+    return { success: false, error: e.message || "Failed to update preferences." };
+  }
+}
+
+export async function deleteAccountAction(): Promise<SettingsActionResult> {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Unauthorized. Please sign in." };
+  }
+
+  try {
+    // 1. Financial check: does the user have any outstanding debts?
+    const aggregated = await getAggregatedBalancesQuery(session.id);
+    for (const cur of aggregated.currencies) {
+      const summary = aggregated.byCurrency[cur];
+      if (summary && summary.netTotalMinor < BigInt(0)) {
+        const debtMajor = Math.abs(fromMinorUnits(summary.netTotalMinor)).toFixed(2);
+        return {
+          success: false,
+          error: `Cannot delete account: You have an outstanding debt of ${cur} ${debtMajor}. You must settle all balances before closing your account.`,
+        };
+      }
+    }
+
+    // 2. Safe Anonymization & Deletion
+    const anonymizedUsername = `deleted_${session.id.slice(0, 8)}`;
+    const anonymizedEmail = `deleted_${session.id}@hisabo.local`;
+
+    await db
+      .update(users)
+      .set({
+        name: "Former Member",
+        username: anonymizedUsername,
+        email: anonymizedEmail,
+        passwordHash: null,
+        status: "deleted",
+        paymentHandle: null,
+        image: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, session.id));
+
+    await clearUserSessionCookie();
+    return { success: true, message: "Your account has been deleted safely." };
+  } catch (e: any) {
+    return { success: false, error: e.message || "Failed to delete account." };
+  }
+}
+

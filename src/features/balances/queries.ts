@@ -255,3 +255,18 @@ export async function getAggregatedBalancesQuery(userId: string): Promise<Aggreg
     peerBalances,
   };
 }
+
+export async function getMemberNetPositionInGroup(
+  groupId: string,
+  userId: string
+): Promise<bigint> {
+  const aggregated = await getAggregatedBalancesQuery(userId);
+  let totalNetInGroup = BigInt(0);
+  for (const peer of aggregated.peerBalances) {
+    if (peer.groupId === groupId) {
+      totalNetInGroup += peer.netMinor;
+    }
+  }
+  return totalNetInGroup;
+}
+

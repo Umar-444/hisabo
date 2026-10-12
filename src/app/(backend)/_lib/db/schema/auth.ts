@@ -9,7 +9,9 @@ export const users = pgTable("users", {
   username: varchar("username", { length: 50 }).unique(),
   passwordHash: text("password_hash"),
   role: varchar("role", { length: 20 }).default("user").notNull(), // 'user' | 'admin'
-  status: varchar("status", { length: 20 }).default("active").notNull(), // 'active' | 'pending' | 'suspended'
+  status: varchar("status", { length: 20 }).default("active").notNull(), // 'active' | 'pending' | 'suspended' | 'deleted'
+  defaultCurrency: varchar("default_currency", { length: 10 }).default("SAR").notNull(),
+  paymentHandle: text("payment_handle"), // STC Pay mobile or IBAN snippet
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });

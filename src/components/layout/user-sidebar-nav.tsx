@@ -9,6 +9,7 @@ import {
   Scale,
   HandCoins,
   Settings,
+  Bell,
 } from "lucide-react";
 
 interface Props {
@@ -50,6 +51,12 @@ export function UserSidebarNav({ pendingActionsCount, isCollapsed = false }: Pro
       icon: HandCoins,
       isActive: pathname.startsWith("/settlements"),
       badge: pendingActionsCount > 0 ? pendingActionsCount : undefined,
+    },
+    {
+      href: "/notifications",
+      label: "Notifications",
+      icon: Bell,
+      isActive: pathname.startsWith("/notifications"),
     },
     {
       href: "/settings",
