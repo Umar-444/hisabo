@@ -2,7 +2,7 @@ import { getUserSession } from "@/lib/auth/user-session";
 import { redirect } from "next/navigation";
 import { getUserGroupsQuery } from "@/features/groups";
 import { getGroupDetailQuery } from "@/features/groups";
-import { NewExpenseClientForm } from "./new-expense-form";
+import { NewExpenseClientForm } from "@/features/expenses/components/new-expense-form";
 
 export const instant = false;
 

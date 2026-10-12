@@ -15,7 +15,7 @@ import {
   Share2,
   Calendar,
 } from "lucide-react";
-import { InviteMemberModalClient } from "./invite-member-modal";
+import { InviteMemberModalClient } from "@/features/groups/components/invite-member-modal";
 
 export const instant = false;
 

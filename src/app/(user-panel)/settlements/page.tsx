@@ -13,7 +13,7 @@ import {
   Building2,
   Sparkles,
 } from "lucide-react";
-import { SettlementActionButtonsClient } from "./settlement-actions-client";
+import { SettlementActionButtonsClient } from "@/features/settlements/components/settlement-actions-client";
 
 export const instant = false;
 

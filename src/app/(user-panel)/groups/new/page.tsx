@@ -1,6 +1,6 @@
 import { getUserSession } from "@/lib/auth/user-session";
 import { redirect } from "next/navigation";
-import { NewGroupFormClient } from "./new-group-form";
+import { NewGroupFormClient } from "@/features/groups/components/new-group-form";
 
 export const instant = false;
 

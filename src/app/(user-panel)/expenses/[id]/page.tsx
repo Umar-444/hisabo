@@ -13,7 +13,7 @@ import {
   User,
   CheckCircle2,
 } from "lucide-react";
-import { DisputeButtonClient } from "./dispute-button";
+import { DisputeButtonClient } from "@/features/expenses/components/dispute-button";
 
 export const instant = false;
 

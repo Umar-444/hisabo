@@ -15,7 +15,7 @@ import {
   Building2,
   Sparkles,
 } from "lucide-react";
-import { SettleUpModalClient } from "./settle-up-modal";
+import { SettleUpModalClient } from "@/features/balances/components/settle-up-modal";
 
 export const instant = false;
 
