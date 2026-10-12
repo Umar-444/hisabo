@@ -149,7 +149,7 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-20">
+    <div className="mx-auto max-w-2xl md:max-w-3xl space-y-4">
       {/* 1. Friendly Greeting */}
       <div className="flex items-center justify-between pt-1">
         <div>
