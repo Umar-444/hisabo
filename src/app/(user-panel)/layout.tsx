@@ -7,9 +7,12 @@ import {
   Building2,
   Receipt,
   Scale,
+  HandCoins,
+  Bell,
   LogOut,
   PlusCircle,
 } from "lucide-react";
+import { getPendingActionsQuery } from "@/features/settlements";
 
 export const instant = false;
 
@@ -22,6 +25,14 @@ export default async function UserPanelLayout({
 
   if (!session) {
     redirect("/login");
+  }
+
+  let pendingActionsCount = 0;
+  try {
+    const pendingActions = await getPendingActionsQuery(session.id);
+    pendingActionsCount = pendingActions.totalCount;
+  } catch (err) {
+    console.error("Failed to load pending actions count:", err);
   }
 
   return (
@@ -71,11 +82,42 @@ export default async function UserPanelLayout({
                 <Scale className="h-4 w-4 text-slate-400" />
                 Balances
               </Link>
+              <Link
+                href="/settlements"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:text-[#185CFF] hover:bg-slate-50 transition-colors relative"
+              >
+                <HandCoins className="h-4 w-4 text-slate-400" />
+                <span>Settlements</span>
+                {pendingActionsCount > 0 && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-black text-white shadow-xs animate-pulse">
+                    {pendingActionsCount}
+                  </span>
+                )}
+              </Link>
             </nav>
           </div>
 
           {/* Right Action Icons & User Profile */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {/* Quick Bell Notification / Actions Icon */}
+            <Link
+              href="/settlements"
+              title={
+                pendingActionsCount > 0
+                  ? `${pendingActionsCount} pending action${pendingActionsCount > 1 ? "s" : ""} require your review`
+                  : "Settlements feed"
+              }
+              className="relative p-2 rounded-xl text-slate-500 hover:text-[#185CFF] hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <Bell className="h-4 w-4" />
+              {pendingActionsCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-white" />
+                </span>
+              )}
+            </Link>
+
             <Link
               href="/expenses/new"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-[#185CFF] text-white hover:bg-[#1249D6] transition-colors shadow-sm shadow-[#185CFF]/20 cursor-pointer"
@@ -84,7 +126,7 @@ export default async function UserPanelLayout({
               <span className="hidden sm:inline">Add Expense</span>
             </Link>
 
-            <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
+            <div className="h-6 w-px bg-slate-200 mx-0.5 hidden sm:block" />
 
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -139,6 +181,13 @@ export default async function UserPanelLayout({
         <Link href="/balances" className="flex flex-col items-center gap-1 py-1">
           <Scale className="h-4 w-4" />
           Balances
+        </Link>
+        <Link href="/settlements" className="flex flex-col items-center gap-1 py-1 relative">
+          <HandCoins className="h-4 w-4" />
+          <span>Settling</span>
+          {pendingActionsCount > 0 && (
+            <span className="absolute top-0.5 right-2 flex h-2 w-2 rounded-full bg-amber-500" />
+          )}
         </Link>
       </nav>
     </div>

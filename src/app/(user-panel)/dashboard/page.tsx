@@ -22,6 +22,8 @@ import {
   DashboardBalanceHero,
   SerializedCurrencySummary,
 } from "@/features/balances/components/dashboard-balance-hero";
+import { getPendingActionsQuery } from "@/features/settlements";
+import { PendingActionsCard } from "@/features/settlements/components/pending-actions-card";
 
 export const instant = false;
 
@@ -110,6 +112,42 @@ export default async function DashboardPage() {
     console.error("Error loading expenses:", e);
   }
 
+  // Fetch pending actions / settlements needing attention
+  const pendingActions = await getPendingActionsQuery(session.id);
+  const serializedPending = pendingActions.pendingToConfirm.map((st) => ({
+    id: st.id,
+    groupId: st.groupId,
+    groupName: st.groupName,
+    payerId: st.payerId,
+    payerName: st.payerName,
+    payerUsername: st.payerUsername,
+    payeeId: st.payeeId,
+    payeeName: st.payeeName,
+    amountMajor: fromMinorUnits(st.amountMinor),
+    currency: st.currency,
+    status: st.status,
+    paymentMethod: st.paymentMethod,
+    note: st.note,
+    createdAt: st.createdAt.toISOString(),
+  }));
+
+  const serializedDisputes = pendingActions.activeDisputes.map((st) => ({
+    id: st.id,
+    groupId: st.groupId,
+    groupName: st.groupName,
+    payerId: st.payerId,
+    payerName: st.payerName,
+    payerUsername: st.payerUsername,
+    payeeId: st.payeeId,
+    payeeName: st.payeeName,
+    amountMajor: fromMinorUnits(st.amountMinor),
+    currency: st.currency,
+    status: st.status,
+    paymentMethod: st.paymentMethod,
+    note: st.note,
+    createdAt: st.createdAt.toISOString(),
+  }));
+
   return (
     <div className="mx-auto max-w-2xl space-y-5 pb-20">
       {/* 1. Friendly Greeting */}
@@ -119,7 +157,9 @@ export default async function DashboardPage() {
             Hi, {session.name.split(" ")[0]} 👋
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Here is your live shared balance overview
+            {pendingActions.totalCount > 0
+              ? `You have ${pendingActions.totalCount} pending action${pendingActions.totalCount > 1 ? "s" : ""} to review`
+              : "Here is your live shared balance overview"}
           </p>
         </div>
 
@@ -128,9 +168,19 @@ export default async function DashboardPage() {
           className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
         >
           <Building2 className="h-3.5 w-3.5 text-[#185CFF]" />
-          <span>Apartment 4B</span>
+          <span>
+            {userGroups.length > 0
+              ? userGroups[0].name
+              : "Join a Group"}
+          </span>
         </Link>
       </div>
+
+      {/* Pending Actions Center Alert (Visible when flatmates submit settlement claims) */}
+      <PendingActionsCard
+        pendingSettlements={serializedPending}
+        disputes={serializedDisputes}
+      />
 
       {/* 2. Signature Chime-Inspired Balance Hero Card (Multi-Currency Partitioned) */}
       <DashboardBalanceHero
