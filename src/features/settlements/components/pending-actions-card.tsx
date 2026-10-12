@@ -13,7 +13,6 @@ import {
   Loader2,
   Clock,
   ExternalLink,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -92,22 +91,22 @@ export function PendingActionsCard({
   }
 
   return (
-    <div className="rounded-[22px] border border-[#f5d0b5] bg-[#ffe8d4]/90 p-4 sm:p-5 shadow-xs space-y-3.5 transition-all">
-      {/* Notion-style Top Banner Header */}
+    <div className="rounded-xl border border-[#f9e79f] bg-[#fef7d6] p-4 sm:p-4.5 shadow-2xs space-y-3 transition-all">
+      {/* Top Banner Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#793400] text-white shadow-xs">
-            <Zap className="h-4 w-4" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#dd5b00] text-white shadow-2xs">
+            <BellRing className="h-3.5 w-3.5" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-[#523410] tracking-tight flex items-center gap-2">
+            <h2 className="text-xs font-bold text-[#523410] uppercase tracking-wider flex items-center gap-2">
               Action Required
               <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#dd5b00] opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#dd5b00]" />
               </span>
             </h2>
-            <p className="text-[11px] font-medium text-[#793400]/80">
+            <p className="text-[11px] text-[#793400] font-normal">
               {pendingList.length > 0
                 ? `${pendingList.length} payment claim${pendingList.length > 1 ? "s" : ""} awaiting your confirmation`
                 : "Active settlement reviews requiring your attention"}
@@ -117,7 +116,7 @@ export function PendingActionsCard({
 
         <Link
           href="/settlements"
-          className="text-[11px] font-bold text-[#793400] hover:text-[#523410] flex items-center gap-1 hover:underline"
+          className="text-[11px] font-semibold text-[#793400] hover:text-[#523410] flex items-center gap-1 hover:underline"
         >
           <span>Settlements</span>
           <ExternalLink className="h-3 w-3" />
@@ -125,7 +124,7 @@ export function PendingActionsCard({
       </div>
 
       {/* Pending Settlement Claims List */}
-      <div className="space-y-2.5">
+      <div className="space-y-2">
         {pendingList.map((st) => {
           const isActing = actionInProgressId === st.id && isPending;
           const isDisputingThis = activeDisputeId === st.id;
@@ -133,25 +132,25 @@ export function PendingActionsCard({
           return (
             <div
               key={st.id}
-              className="rounded-xl border border-[#f5d0b5] bg-white p-3.5 sm:p-4 shadow-2xs space-y-3"
+              className="rounded-lg border border-[#f5d0b5] bg-white p-3.5 shadow-2xs space-y-2.5"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-full bg-[#e6e0f5] text-[#7b3ff2] font-black text-sm flex items-center justify-center shrink-0 border border-purple-200">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-md bg-[#ffe8d4] text-[#793400] font-bold text-xs flex items-center justify-center shrink-0 border border-[#f5d0b5]">
                     {st.payerName.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-bold text-[#1a1a1a] leading-snug">
-                      <span className="text-[#185cff]">{st.payerName}</span> recorded a payment to you
+                    <div className="text-xs font-semibold text-[#1a1a1a] leading-snug">
+                      <span className="text-[#185CFF]">{st.payerName}</span> recorded a payment to you
                     </div>
-                    <div className="text-xs text-[#787671] flex items-center gap-1.5 flex-wrap mt-0.5">
-                      <span className="font-semibold text-[#37352f]">{st.groupName}</span>
+                    <div className="text-[11px] text-[#787671] flex items-center gap-1.5 flex-wrap mt-0.5">
+                      <span className="font-medium text-[#37352f]">{st.groupName}</span>
                       <span>·</span>
                       <span className="capitalize">{st.paymentMethod.replace("_", " ")}</span>
                       {st.note && (
                         <>
                           <span>·</span>
-                          <span className="italic text-slate-500 truncate max-w-[150px]">
+                          <span className="italic text-[#787671] truncate max-w-[150px]">
                             &ldquo;{st.note}&rdquo;
                           </span>
                         </>
@@ -161,21 +160,21 @@ export function PendingActionsCard({
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="text-base font-black font-mono text-[#1a1a1a] tabular-nums">
+                  <div className="text-sm font-bold font-mono text-[#1a1a1a] tabular-nums">
                     {st.currency} {st.amountMajor.toFixed(2)}
                   </div>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#793400] bg-[#ffe8d4] px-2 py-0.5 rounded-md mt-0.5 border border-[#f5d0b5]">
+                  <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-[#793400] bg-[#ffe8d4] px-1.5 py-0.5 rounded-sm mt-0.5">
                     <Clock className="h-2.5 w-2.5" />
-                    Pending Confirmation
+                    Unconfirmed
                   </span>
                 </div>
               </div>
 
               {/* Inline Dispute Reason Form */}
               {isDisputingThis ? (
-                <div className="pt-2 border-t border-[#e5e3df] space-y-2">
-                  <label className="text-[11px] font-bold text-[#37352f]">
-                    Why are you disputing this payment claim?
+                <div className="pt-2 border-t border-[#ede9e4] space-y-2">
+                  <label className="text-[11px] font-bold text-[#787671] uppercase tracking-wider">
+                    Reason for disputing this payment claim
                   </label>
                   <input
                     type="text"
@@ -184,7 +183,7 @@ export function PendingActionsCard({
                     placeholder="e.g. Did not receive transfer in bank, wrong amount..."
                     value={disputeReason}
                     onChange={(e) => setDisputeReason(e.target.value)}
-                    className="w-full rounded-lg border border-red-300 bg-red-50/40 px-3 py-2 text-xs text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-red-400"
+                    className="w-full rounded-md border border-red-300 bg-red-50/40 px-3 py-1.5 text-xs text-[#1a1a1a] focus:outline-none focus:ring-1 focus:ring-red-400"
                   />
                   <div className="flex items-center justify-end gap-2 pt-1">
                     <button
@@ -193,7 +192,7 @@ export function PendingActionsCard({
                         setActiveDisputeId(null);
                         setDisputeReason("");
                       }}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#787671] hover:bg-[#f6f5f4] cursor-pointer"
+                      className="px-2.5 py-1 rounded-md text-xs font-medium text-[#787671] hover:bg-[#f6f5f4] cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -201,16 +200,16 @@ export function PendingActionsCard({
                       type="button"
                       disabled={isActing || !disputeReason.trim()}
                       onClick={() => handleDisputeSubmit(st.id)}
-                      className="px-3.5 py-1.5 rounded-lg bg-[#e03131] text-white text-xs font-bold hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                      className="px-3 py-1 rounded-md bg-[#EF4444] text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                     >
-                      {isActing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                      {isActing ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
                       <span>Submit Dispute</span>
                     </button>
                   </div>
                 </div>
               ) : (
                 /* Primary Decision Buttons */
-                <div className="flex items-center justify-between pt-1 border-t border-[#e5e3df] gap-2">
+                <div className="flex items-center justify-between pt-1 border-t border-[#ede9e4] gap-2">
                   <button
                     type="button"
                     disabled={isActing}
@@ -218,7 +217,7 @@ export function PendingActionsCard({
                       setActiveDisputeId(st.id);
                       setDisputeReason("");
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-[#c8c4be] text-xs font-semibold text-[#37352f] hover:text-[#e03131] hover:border-red-300 hover:bg-red-50/50 transition-colors disabled:opacity-50 cursor-pointer"
+                    className="px-2.5 py-1 rounded-md border border-[#c8c4be] text-xs font-medium text-[#787671] hover:text-[#EF4444] hover:border-red-300 hover:bg-red-50/30 transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     Dispute claim
                   </button>
@@ -227,12 +226,12 @@ export function PendingActionsCard({
                     type="button"
                     disabled={isActing}
                     onClick={() => handleConfirm(st.id)}
-                    className="px-4 py-1.5 rounded-lg bg-[#185cff] hover:bg-[#1249d6] text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                    className="px-3.5 py-1 rounded-md bg-[#10B981] hover:bg-emerald-600 text-white text-xs font-semibold shadow-2xs transition-all flex items-center gap-1.5 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                   >
                     {isActing ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <Loader2 className="h-3 w-3 animate-spin" />
                     ) : (
-                      <Check className="h-3.5 w-3.5 stroke-[3]" />
+                      <Check className="h-3 w-3 stroke-[2.5]" />
                     )}
                     <span>Confirm Receipt</span>
                   </button>
@@ -242,11 +241,11 @@ export function PendingActionsCard({
           );
         })}
 
-        {/* Disputed Settlements Alert */}
+        {/* Disputed Settlements Alert if any */}
         {disputes.map((dsp) => (
           <div
             key={dsp.id}
-            className="flex items-center justify-between rounded-xl border border-red-200 bg-[#fde0ec] p-3 text-xs"
+            className="flex items-center justify-between rounded-lg border border-[#f5b8d0] bg-[#fde0ec] p-2.5 text-xs"
           >
             <div className="flex items-center gap-2 text-[#e03131] font-semibold">
               <AlertTriangle className="h-4 w-4 text-[#e03131] shrink-0" />
