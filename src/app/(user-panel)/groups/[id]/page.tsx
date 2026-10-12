@@ -1,6 +1,6 @@
 import { getUserSession } from "@/lib/auth/user-session";
 import { redirect, notFound } from "next/navigation";
-import { getGroupDetailQuery } from "@/features/groups";
+import { getGroupDetailQuery, getGroupInvitesListQuery } from "@/features/groups";
 import { getGroupExpensesQuery } from "@/features/expenses";
 import { fromMinorUnits } from "@/lib/money";
 import { ui } from "@/lib/ui";
@@ -15,7 +15,7 @@ import {
   Share2,
   Calendar,
 } from "lucide-react";
-import { InviteMemberModalClient } from "@/features/groups/components/invite-member-modal";
+import { GroupInviteModalClient } from "@/features/groups/components/group-invite-modal";
 
 export const instant = false;
 
@@ -46,7 +46,10 @@ export default async function GroupDetailPage({
     notFound();
   }
 
-  const expensesList = await getGroupExpensesQuery(id);
+  const [expensesList, existingInvites] = await Promise.all([
+    getGroupExpensesQuery(id),
+    getGroupInvitesListQuery(id, session.id),
+  ]);
   const userNetMajor = fromMinorUnits(group.userNetBalanceMinor);
   const isPositive = group.userNetBalanceMinor > BigInt(0);
   const isZero = group.userNetBalanceMinor === BigInt(0);
@@ -64,7 +67,11 @@ export default async function GroupDetailPage({
         <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
           Group Ledger
         </span>
-        <InviteMemberModalClient groupId={group.id} groupName={group.name} />
+        <GroupInviteModalClient
+          groupId={group.id}
+          groupName={group.name}
+          existingInvites={existingInvites}
+        />
       </div>
 
       {/* Group Hero Info */}
@@ -139,7 +146,11 @@ export default async function GroupDetailPage({
             <Users className="h-4 w-4 text-[#185CFF]" />
             Members & Balances ({group.members.length})
           </h2>
-          <span className="text-xs text-slate-400 font-medium">Zero-Sum Ledger</span>
+          <GroupInviteModalClient
+            groupId={group.id}
+            groupName={group.name}
+            existingInvites={existingInvites}
+          />
         </div>
 
         <div className="divide-y divide-slate-100">

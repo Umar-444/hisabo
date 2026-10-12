@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "@/app/(backend)/_lib/db";
-import { groups, groupMembers, users, expenses, expenseSplits, settlements } from "@/app/(backend)/_lib/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { groups, groupMembers, groupInvitations, users, expenses, expenseSplits, settlements } from "@/app/(backend)/_lib/db/schema";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { GroupDetail, GroupMemberItem } from "./types";
 
 export async function getUserGroupsQuery(userId: string) {
@@ -165,4 +165,127 @@ export async function getGroupDetailQuery(groupId: string, userId: string): Prom
     userNetBalanceMinor,
     totalExpensesCount: groupExpenses.length,
   };
+}
+
+export async function getGroupInvitePreviewQuery(token: string) {
+  const [invitation] = await db
+    .select({
+      id: groupInvitations.id,
+      groupId: groupInvitations.groupId,
+      token: groupInvitations.token,
+      invitedBy: groupInvitations.invitedBy,
+      expiresAt: groupInvitations.expiresAt,
+      maxUses: groupInvitations.maxUses,
+      useCount: groupInvitations.useCount,
+      isRevoked: groupInvitations.isRevoked,
+      createdAt: groupInvitations.createdAt,
+    })
+    .from(groupInvitations)
+    .where(eq(groupInvitations.token, token.trim()));
+
+  if (!invitation) {
+    return {
+      isValid: false,
+      reason: "not_found" as const,
+      group: null,
+      inviter: null,
+      invitation: null,
+    };
+  }
+
+  const [groupRow] = await db
+    .select({
+      id: groups.id,
+      name: groups.name,
+      description: groups.description,
+      defaultCurrency: groups.defaultCurrency,
+    })
+    .from(groups)
+    .where(eq(groups.id, invitation.groupId));
+
+  const [inviter] = await db
+    .select({
+      name: users.name,
+      username: users.username,
+    })
+    .from(users)
+    .where(eq(users.id, invitation.invitedBy));
+
+  const [membersCount] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, invitation.groupId), eq(groupMembers.status, "active")));
+
+  const now = new Date();
+  const isExpired = now > invitation.expiresAt;
+  const isRevoked = invitation.isRevoked;
+  const isMaxReached = invitation.maxUses > 0 && invitation.useCount >= invitation.maxUses;
+
+  let reason: "not_found" | "revoked" | "expired" | "max_reached" | "valid" = "valid";
+  if (isRevoked) reason = "revoked";
+  else if (isExpired) reason = "expired";
+  else if (isMaxReached) reason = "max_reached";
+
+  return {
+    isValid: reason === "valid",
+    reason,
+    group: groupRow
+      ? {
+          ...groupRow,
+          memberCount: membersCount?.count || 1,
+        }
+      : null,
+    inviter: inviter || { name: "A Flatmate", username: "user" },
+    invitation: {
+      id: invitation.id,
+      token: invitation.token,
+      expiresAt: invitation.expiresAt,
+      maxUses: invitation.maxUses,
+      useCount: invitation.useCount,
+    },
+  };
+}
+
+export async function getGroupInvitesListQuery(groupId: string, userId: string) {
+  // Check user is active member
+  const [membership] = await db
+    .select()
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId), eq(groupMembers.status, "active")));
+
+  if (!membership) return [];
+
+  const rows = await db
+    .select({
+      id: groupInvitations.id,
+      token: groupInvitations.token,
+      invitedBy: groupInvitations.invitedBy,
+      expiresAt: groupInvitations.expiresAt,
+      maxUses: groupInvitations.maxUses,
+      useCount: groupInvitations.useCount,
+      isRevoked: groupInvitations.isRevoked,
+      createdAt: groupInvitations.createdAt,
+    })
+    .from(groupInvitations)
+    .where(eq(groupInvitations.groupId, groupId))
+    .orderBy(desc(groupInvitations.createdAt));
+
+  const results = await Promise.all(
+    rows.map(async (row) => {
+      const [inviter] = await db
+        .select({ name: users.name, username: users.username })
+        .from(users)
+        .where(eq(users.id, row.invitedBy));
+
+      return {
+        ...row,
+        inviterName: inviter?.name || "Member",
+        inviterUsername: inviter?.username || "user",
+        isExpired: new Date() > row.expiresAt,
+        isActive: !row.isRevoked && new Date() <= row.expiresAt && (row.maxUses === 0 || row.useCount < row.maxUses),
+      };
+    })
+  );
+
+  return results;
 }

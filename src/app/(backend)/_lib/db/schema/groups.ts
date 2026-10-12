@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, varchar, integer, boolean } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 export const groups = pgTable("groups", {
@@ -36,5 +36,8 @@ export const groupInvitations = pgTable("group_invitations", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+  maxUses: integer("max_uses").default(0).notNull(), // 0 = unlimited during validity period, 1 = single use
+  useCount: integer("use_count").default(0).notNull(),
+  isRevoked: boolean("is_revoked").default(false).notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
