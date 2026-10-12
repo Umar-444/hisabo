@@ -154,6 +154,27 @@ async function seed() {
     }
   }
 
+  // 4. Seed Currencies
+  const defaultCurrencies = [
+    { code: "SAR", name: "Saudi Riyal", symbol: "SAR", decimals: 2, isLive: true, isDefault: true },
+    { code: "AED", name: "UAE Dirham", symbol: "AED", decimals: 2, isLive: true, isDefault: false },
+    { code: "USD", name: "US Dollar", symbol: "$", decimals: 2, isLive: true, isDefault: false },
+    { code: "EUR", name: "Euro", symbol: "€", decimals: 2, isLive: true, isDefault: false },
+    { code: "GBP", name: "British Pound", symbol: "£", decimals: 2, isLive: true, isDefault: false },
+    { code: "KWD", name: "Kuwaiti Dinar", symbol: "KWD", decimals: 3, isLive: false, isDefault: false },
+    { code: "QAR", name: "Qatari Riyal", symbol: "QAR", decimals: 2, isLive: false, isDefault: false },
+    { code: "BHD", name: "Bahraini Dinar", symbol: "BHD", decimals: 3, isLive: false, isDefault: false },
+    { code: "OMR", name: "Omani Rial", symbol: "OMR", decimals: 3, isLive: false, isDefault: false },
+  ];
+
+  for (const c of defaultCurrencies) {
+    await db
+      .insert(schema.currencies)
+      .values(c)
+      .onConflictDoNothing();
+  }
+  console.log("✓ Currencies seeded (SAR, AED, USD, EUR, GBP, KWD, QAR, BHD, OMR).");
+
   console.log("🎉 Live Database Seeding Complete!");
 }
 

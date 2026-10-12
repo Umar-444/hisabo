@@ -5,3 +5,4 @@ export * from "./expenses";
 export * from "./settlements";
 export * from "./notifications";
 export * from "./outbox";
+export * from "./currencies";

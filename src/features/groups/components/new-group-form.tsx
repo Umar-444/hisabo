@@ -15,13 +15,39 @@ const CATEGORIES = [
   { id: "other", label: "Other Pool", emoji: "👥" },
 ];
 
-export function NewGroupFormClient() {
+export interface LiveCurrencyItem {
+  code: string;
+  name: string;
+  symbol: string;
+  isDefault: boolean;
+}
+
+export function NewGroupFormClient({
+  currencies = [],
+}: {
+  currencies?: LiveCurrencyItem[];
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  const fallbackCurrencies: LiveCurrencyItem[] = [
+    { code: "SAR", name: "Saudi Riyal", symbol: "ر.س", isDefault: true },
+    { code: "AED", name: "UAE Dirham", symbol: "د.إ", isDefault: false },
+    { code: "USD", name: "US Dollar", symbol: "$", isDefault: false },
+    { code: "EUR", name: "Euro", symbol: "€", isDefault: false },
+    { code: "GBP", name: "British Pound", symbol: "£", isDefault: false },
+  ];
+
+  const availableCurrencies =
+    currencies && currencies.length > 0 ? currencies : fallbackCurrencies;
+  const initialCurrency =
+    availableCurrencies.find((c) => c.isDefault)?.code ||
+    availableCurrencies[0]?.code ||
+    "SAR";
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [defaultCurrency, setDefaultCurrency] = useState("SAR");
+  const [defaultCurrency, setDefaultCurrency] = useState(initialCurrency);
   const [category, setCategory] = useState("apartment");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -99,11 +125,11 @@ export function NewGroupFormClient() {
               onChange={(e) => setDefaultCurrency(e.target.value)}
               className={ui.select}
             >
-              <option value="SAR">SAR (Saudi Riyal)</option>
-              <option value="AED">AED (UAE Dirham)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
+              {availableCurrencies.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.code} ({c.symbol}) - {c.name}
+                </option>
+              ))}
             </select>
           </div>
 
