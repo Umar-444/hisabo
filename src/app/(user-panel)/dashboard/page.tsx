@@ -16,6 +16,9 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { getAggregatedBalancesQuery } from "@/features/balances";
+import { fromMinorUnits } from "@/lib/money";
+
 export const instant = false;
 
 export default async function DashboardPage() {
@@ -23,6 +26,19 @@ export default async function DashboardPage() {
   if (!session) {
     redirect("/login");
   }
+
+  // Fetch live aggregated balance
+  const aggregatedBalances = await getAggregatedBalancesQuery(session.id);
+  const netMajor = fromMinorUnits(aggregatedBalances.netTotalMinor);
+  const isPositive = aggregatedBalances.netTotalMinor > BigInt(0);
+  const isZero = aggregatedBalances.netTotalMinor === BigInt(0);
+
+  // Split integer and cents for superscript rendering
+  const absNet = Math.abs(netMajor);
+  const integerStr = Math.floor(absNet).toString();
+  const centsStr = Math.round((absNet - Math.floor(absNet)) * 100).toString().padStart(2, "0");
+  const netDollars = isZero ? "0" : (isPositive ? `+${integerStr}` : `-${integerStr}`);
+  const netCents = centsStr;
 
   // Fetch groups
   let userGroups: { id: string; name: string; defaultCurrency: string; role: string }[] = [];
@@ -69,12 +85,6 @@ export default async function DashboardPage() {
   } catch (e) {
     console.error("Error loading expenses:", e);
   }
-
-  // Balance logic
-  const isUmar = session.email === "umar@hisabo.com" || session.name.includes("Umar");
-  const netDollars = isUmar ? "+120" : "0";
-  const netCents = "00";
-  const isPositive = isUmar;
 
   return (
     <div className="mx-auto max-w-2xl space-y-5 pb-20">
