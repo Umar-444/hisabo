@@ -221,11 +221,10 @@ export default function HomePage() {
                         <button
                           key={curr}
                           onClick={() => setActiveCurrency(curr)}
-                          className={`rounded-full px-2.5 py-0.5 transition-all ${
-                            activeCurrency === curr
-                              ? "bg-white text-[#185cff] shadow-xs"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
+                          className={`rounded-full px-2.5 py-0.5 transition-all ${activeCurrency === curr
+                            ? "bg-white text-[#185cff] shadow-xs"
+                            : "text-slate-600 hover:text-slate-900"
+                            }`}
                         >
                           {curr}
                         </button>
@@ -398,21 +397,19 @@ export default function HomePage() {
                     <div className="flex rounded-lg bg-slate-200/80 p-0.5 text-[11px] font-bold">
                       <button
                         onClick={() => setSplitTab("equal")}
-                        className={`flex-1 rounded-md py-1 transition-all ${
-                          splitTab === "equal"
-                            ? "bg-white text-[#185cff] shadow-2xs"
-                            : "text-slate-600"
-                        }`}
+                        className={`flex-1 rounded-md py-1 transition-all ${splitTab === "equal"
+                          ? "bg-white text-[#185cff] shadow-2xs"
+                          : "text-slate-600"
+                          }`}
                       >
                         Equal Split (4 Flatmates)
                       </button>
                       <button
                         onClick={() => setSplitTab("custom")}
-                        className={`flex-1 rounded-md py-1 transition-all ${
-                          splitTab === "custom"
-                            ? "bg-white text-[#185cff] shadow-2xs"
-                            : "text-slate-600"
-                        }`}
+                        className={`flex-1 rounded-md py-1 transition-all ${splitTab === "custom"
+                          ? "bg-white text-[#185cff] shadow-2xs"
+                          : "text-slate-600"
+                          }`}
                       >
                         Custom Halalas
                       </button>

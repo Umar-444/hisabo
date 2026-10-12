@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ui } from "@/lib/ui";
 import {
   CreditCard,
   PlusCircle,
@@ -10,6 +9,9 @@ import {
   TrendingUp,
   TrendingDown,
   Layers,
+  Sparkles,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 
 export interface SerializedCurrencySummary {
@@ -72,13 +74,15 @@ export function DashboardBalanceHero({
   const hasMultipleCurrencies = currencies.length > 1;
 
   return (
-    <div className="space-y-3">
-      {/* Multi-Currency Tab Switcher (Visible when user has groups in > 1 currency) */}
+    <div className="space-y-3.5">
+      {/* ------------------------------------------------------------------- */}
+      {/* MULTI-CURRENCY NOTION PILL SWITCHER                                 */}
+      {/* ------------------------------------------------------------------- */}
       {hasMultipleCurrencies && (
-        <div className="flex items-center justify-between bg-white rounded-2xl p-1.5 border border-slate-200/90 shadow-2xs">
+        <div className="flex items-center justify-between bg-white rounded-2xl p-1.5 border border-[#e5e3df] shadow-2xs">
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pl-1 pr-2 flex items-center gap-1">
-              <Layers className="h-3.5 w-3.5 text-blue-500" />
+            <span className="text-[11px] font-bold text-[#787671] uppercase tracking-wider pl-1 pr-2 flex items-center gap-1">
+              <Layers className="h-3.5 w-3.5 text-[#185cff]" />
               Currency:
             </span>
             {currencies.map((code) => {
@@ -94,8 +98,8 @@ export function DashboardBalanceHero({
                   onClick={() => setSelectedCurrency(code)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-[#185CFF] text-white shadow-xs shadow-blue-500/20"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                      ? "bg-[#185cff] text-white shadow-xs shadow-[#185cff]/20"
+                      : "text-[#5d5b54] hover:text-[#0a1530] hover:bg-[#f6f5f4]"
                   }`}
                 >
                   {meta.flag && <span>{meta.flag}</span>}
@@ -112,95 +116,114 @@ export function DashboardBalanceHero({
             })}
           </div>
 
-          <div className="text-[11px] font-semibold text-slate-400 pr-2 hidden sm:block">
+          <div className="text-[11px] font-semibold text-[#787671] pr-2 hidden sm:block">
             Segregated Ledgers
           </div>
         </div>
       )}
 
-      {/* Signature Chime-Inspired Balance Hero Card */}
-      <div className={ui.heroCard}>
-        {/* Subtle decorative background circles */}
-        <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/10 blur-xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-blue-400/20 blur-xl pointer-events-none" />
+      {/* ------------------------------------------------------------------- */}
+      {/* NOTION DEEP NAVY HERO BALANCE CARD                                  */}
+      {/* ------------------------------------------------------------------- */}
+      <div className="relative overflow-hidden rounded-[26px] bg-[#0a1530] text-white p-6 sm:p-7 shadow-[0px_20px_45px_-10px_rgba(10,21,48,0.45)] border border-white/10">
+        {/* Subtle Ambient Radial Lighting */}
+        <div className="pointer-events-none absolute -top-16 -right-16 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(24,92,255,0.35)_0%,transparent_70%)]" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(92,161,255,0.15)_0%,transparent_70%)]" />
 
         <div className="relative z-10">
-          {/* Card Type Header */}
-          <div className="flex items-center justify-between text-white/80">
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-              <CreditCard className="h-3.5 w-3.5 text-white/90" />
-              <span>Net Position · Available Balance</span>
-            </div>
+          {/* Card Eyebrow & Status Chips */}
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-xs">
+              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/10 text-blue-200">
+                <CreditCard className="h-3.5 w-3.5" />
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Net Position · Live Ledger
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-bold text-white tracking-wide border border-white/10">
                 {selectedCurrency}
               </span>
-              <span className="rounded-full bg-emerald-400/25 text-emerald-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-xs">
-                Live
-              </span>
+              {currentSummary.isPositive && (
+                <span className="rounded-md bg-[#d9f3e1] text-[#1aae39] px-2 py-0.5 text-[11px] font-bold">
+                  You are owed
+                </span>
+              )}
+              {currentSummary.isNegative && (
+                <span className="rounded-md bg-[#fde0ec] text-[#e03131] px-2 py-0.5 text-[11px] font-bold">
+                  You owe
+                </span>
+              )}
+              {currentSummary.isZero && (
+                <span className="rounded-md bg-[#e6e0f5] text-[#7b3ff2] px-2 py-0.5 text-[11px] font-bold">
+                  Settled
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Large Tabular Balance with Superscript Cents */}
+          {/* Large Tabular Display Balance */}
           <div className="mt-4 flex items-baseline">
-            <span className="font-mono text-2xl font-bold text-white/80 mr-1.5">
+            <span className="text-xl sm:text-2xl font-bold text-slate-400 mr-2 font-mono">
               {selectedCurrency}
             </span>
-            <span className="text-[46px] font-black leading-none tabular-nums tracking-tight">
+            <span className="text-4xl sm:text-5xl font-black leading-none tracking-tight tabular-nums">
               {netDollars}
             </span>
-            <span className="text-[26px] font-bold leading-none tabular-nums text-white/85 ml-0.5">
+            <span className="text-2xl sm:text-3xl font-bold leading-none tabular-nums text-slate-400 ml-0.5">
               .{currentSummary.centsStr}
             </span>
           </div>
 
-          {/* Subtitle / Status */}
-          <p className="mt-2 text-xs font-semibold text-white/80">
+          {/* Descriptive Subtitle */}
+          <p className="mt-2 text-xs font-medium text-slate-300">
             {currentSummary.isPositive
-              ? `You are owed a net total of ${selectedCurrency} ${currentSummary.netTotalMajor.toFixed(2)}`
+              ? `You are owed a net total of ${selectedCurrency} ${currentSummary.netTotalMajor.toFixed(2)} from roommates`
               : currentSummary.isNegative
-              ? `You owe a net total of ${selectedCurrency} ${Math.abs(currentSummary.netTotalMajor).toFixed(2)}`
-              : `All balances squared away in ${selectedCurrency}`}
+              ? `You owe a net total of ${selectedCurrency} ${Math.abs(currentSummary.netTotalMajor).toFixed(2)} to flatmates`
+              : `All shared expenses are balanced to zero in ${selectedCurrency}`}
           </p>
 
-          {/* Side-by-side Credits & Debits breakdown in selected currency */}
-          <div className="mt-4 grid grid-cols-2 gap-2.5 pt-3 border-t border-white/15">
-            <div className="rounded-xl bg-white/10 px-3 py-2 backdrop-blur-xs">
-              <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-200">
-                <TrendingUp className="h-3 w-3" />
+          {/* Side-by-side Credit and Debit breakdown */}
+          <div className="mt-5 grid grid-cols-2 gap-3 pt-4 border-t border-white/10">
+            <div className="rounded-xl bg-white/5 p-3 border border-white/5">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-300">
+                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />
                 <span>Owed to You</span>
               </div>
-              <div className="mt-0.5 text-sm font-black tabular-nums font-mono text-white">
+              <div className="mt-1 text-sm sm:text-base font-extrabold tabular-nums font-mono text-white">
                 +{selectedCurrency} {currentSummary.totalCreditMajor.toFixed(2)}
               </div>
             </div>
 
-            <div className="rounded-xl bg-white/10 px-3 py-2 backdrop-blur-xs">
-              <div className="flex items-center gap-1 text-[11px] font-bold text-white/80">
-                <TrendingDown className="h-3 w-3" />
+            <div className="rounded-xl bg-white/5 p-3 border border-white/5">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-rose-300">
+                <ArrowDownRight className="h-3.5 w-3.5 text-rose-400" />
                 <span>You Owe</span>
               </div>
-              <div className="mt-0.5 text-sm font-black tabular-nums font-mono text-white">
+              <div className="mt-1 text-sm sm:text-base font-extrabold tabular-nums font-mono text-white">
                 -{selectedCurrency} {currentSummary.totalDebitMajor.toFixed(2)}
               </div>
             </div>
           </div>
 
-          {/* Embedded Hero Action Buttons */}
+          {/* Quick Action Buttons */}
           <div className="mt-5 flex items-center gap-3">
             <Link
               href="/expenses/new"
-              className="flex-1 h-11 rounded-[14px] bg-white text-[#185CFF] hover:bg-white/95 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+              className="flex-1 h-11 rounded-xl bg-[#185cff] text-white hover:bg-[#1249d6] font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#185cff]/30 transition-all active:scale-[0.98]"
             >
-              <PlusCircle className="h-4 w-4 text-[#185CFF]" />
-              Add expense
+              <PlusCircle className="h-4 w-4" />
+              Add Expense
             </Link>
             <Link
               href="/balances"
-              className="flex-1 h-11 rounded-[14px] bg-white/15 text-white hover:bg-white/20 font-bold text-xs flex items-center justify-center gap-2 backdrop-blur-md transition-all active:scale-[0.98]"
+              className="flex-1 h-11 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/15 transition-all active:scale-[0.98]"
             >
-              <HandCoins className="h-4 w-4 text-white" />
-              Settle up
+              <HandCoins className="h-4 w-4" />
+              Settle Balances
             </Link>
           </div>
         </div>
