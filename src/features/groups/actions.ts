@@ -7,6 +7,7 @@ import { createGroupSchema, inviteMemberSchema } from "./schema";
 import { revalidatePath } from "next/cache";
 import { eq, or, and, sql } from "drizzle-orm";
 import crypto from "crypto";
+import { getClientIp, checkRateLimit, RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
 
 export async function createGroupAction(formData: FormData) {
   const session = await getUserSession();
@@ -266,6 +267,19 @@ export async function joinGroupByTokenAction(token: string) {
   const session = await getUserSession();
   if (!session) {
     return { success: false, error: "Please log in or register to join this group" };
+  }
+
+  // Rate Limiting Protection against token scanning/flooding
+  const clientIp = await getClientIp();
+  const rateCheck = checkRateLimit(
+    `group:join:${clientIp}:${session.id}`,
+    RATE_LIMIT_PRESETS.INVITE_JOIN
+  );
+  if (!rateCheck.success) {
+    return {
+      success: false,
+      error: `Too many join attempts. Please wait ${rateCheck.resetInSeconds}s before trying again.`,
+    };
   }
 
   try {

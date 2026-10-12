@@ -7,6 +7,7 @@ import { eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { loginSchema, registerSchema } from "./schema";
 import { setUserSessionCookie, clearUserSessionCookie } from "@/lib/auth/user-session";
+import { getClientIp, checkRateLimit, RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
 
 export interface AuthActionResult {
   success: boolean;
@@ -30,6 +31,24 @@ export async function loginAction(
   }
 
   const { email, password } = validation.data;
+
+  // Rate Limiting Protection (Brute Force / Credential Stuffing)
+  const clientIp = await getClientIp();
+  const ipCheck = checkRateLimit(`auth:login:ip:${clientIp}`, RATE_LIMIT_PRESETS.LOGIN);
+  if (!ipCheck.success) {
+    return {
+      success: false,
+      error: `Too many login attempts from your IP. Please wait ${ipCheck.resetInSeconds}s before retrying.`,
+    };
+  }
+
+  const emailCheck = checkRateLimit(`auth:login:email:${email.toLowerCase()}`, RATE_LIMIT_PRESETS.LOGIN);
+  if (!emailCheck.success) {
+    return {
+      success: false,
+      error: `Too many failed attempts for this account. Please wait ${emailCheck.resetInSeconds}s before trying again.`,
+    };
+  }
 
   try {
     // 1. Check user in database
@@ -119,6 +138,16 @@ export async function registerAction(
   }
 
   const { name, username, email, password } = validation.data;
+
+  // Rate Limiting Protection (Registration Spam)
+  const clientIp = await getClientIp();
+  const registerCheck = checkRateLimit(`auth:register:ip:${clientIp}`, RATE_LIMIT_PRESETS.REGISTER);
+  if (!registerCheck.success) {
+    return {
+      success: false,
+      error: `Too many registrations attempted from your network. Please wait ${registerCheck.resetInSeconds}s before trying again.`,
+    };
+  }
 
   try {
     // 1. Check if email or username already taken

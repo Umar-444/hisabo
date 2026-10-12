@@ -114,7 +114,7 @@ When **Ali** pays Umar SAR 40.00 via Bank Transfer and Umar clicks **Confirm Rec
 - [x] **Multi-Currency Segregation:** Render partitioned positions and currency switchers if user has active balances in both SAR and USD.
 - [x] **Pending Actions Center:** Unified notification badge and action card for pending reviews and settlements.
 - [x] **Tokenized Group Invites:** Cryptographic tokens with configurable expiration (e.g., 7 days) and single-use/revocation options on join links.
-- [ ] **Rate Limiting:** Protect auth and invite endpoints against brute-force attempts.
+- [x] **Rate Limiting:** Protect auth and invite endpoints against brute-force attempts with sliding-window limits.
 - [ ] **PWA Offline Banner:** Display clear offline notice rather than pretending unsaved changes occurred.
 
 ---

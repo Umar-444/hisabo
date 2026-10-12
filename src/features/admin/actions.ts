@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { DEFAULT_ADMIN, setAdminSessionCookie, clearAdminSessionCookie } from "@/lib/auth/admin-session";
+import { getClientIp, checkRateLimit, RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
 
 export interface ActionResult<T = unknown> {
   success: boolean;
@@ -19,6 +20,16 @@ export async function adminLoginAction(
 
   if (!email || !password) {
     return { success: false, error: "Please enter both email and password." };
+  }
+
+  // Rate Limiting Protection for Admin Console
+  const clientIp = await getClientIp();
+  const rateCheck = checkRateLimit(`admin:login:ip:${clientIp}`, RATE_LIMIT_PRESETS.LOGIN);
+  if (!rateCheck.success) {
+    return {
+      success: false,
+      error: `Too many administrative login attempts. Please wait ${rateCheck.resetInSeconds}s before retrying.`,
+    };
   }
 
   // Check against default credentials (or database admin)
