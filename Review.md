@@ -111,9 +111,9 @@ When **Ali** pays Umar SAR 40.00 via Bank Transfer and Umar clicks **Confirm Rec
 - [x] **Atomic Transactions:** Expenses, splits, and audit events committed together.
 - [x] **Server-Side Verification:** Server re-verifies splits and membership permissions.
 - [x] **Two-Party Settlement Handshake:** Debtor claim requires creditor confirmation.
-- [ ] **Multi-Currency Segregation:** Render separate hero cards if user has active balances in both SAR and USD.
-- [ ] **Tokenized Group Invites:** Cryptographic tokens with expiration on join links.
+- [x] **Multi-Currency Segregation:** Render partitioned positions and currency switchers if user has active balances in both SAR and USD.
 - [ ] **Pending Actions Center:** Unified notification badge for pending reviews and settlements.
+- [ ] **Tokenized Group Invites:** Cryptographic tokens with expiration on join links.
 - [ ] **Rate Limiting:** Protect auth and invite endpoints against brute-force attempts.
 - [ ] **PWA Offline Banner:** Display clear offline notice rather than pretending unsaved changes occurred.
 
