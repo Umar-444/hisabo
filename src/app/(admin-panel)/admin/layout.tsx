@@ -6,6 +6,7 @@ import {
   Users,
   Building2,
   FileText,
+  Coins,
   LogOut,
   ExternalLink,
 } from "lucide-react";
@@ -71,10 +72,18 @@ export default async function AdminLayout({
             </Link>
 
             <Link
+              href="/admin/currencies"
+              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors"
+            >
+              <Coins className="h-4 w-4 text-amber-400" />
+              Currencies &amp; FX
+            </Link>
+
+            <Link
               href="/admin/audit-logs"
               className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors"
             >
-              <FileText className="h-4 w-4 text-amber-400" />
+              <FileText className="h-4 w-4 text-cyan-400" />
               Audit Trail
             </Link>
           </nav>
