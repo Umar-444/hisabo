@@ -1,0 +1,37 @@
+export const routes = {
+  marketing: {
+    home: "/",
+    features: "/features",
+    howItWorks: "/how-it-works",
+    privacy: "/privacy",
+    terms: "/terms",
+    support: "/support",
+    contact: "/contact",
+  },
+  auth: {
+    login: "/login",
+    register: "/register",
+    verifyEmail: "/verify-email",
+    resetPassword: "/reset-password",
+  },
+  app: {
+    dashboard: "/dashboard",
+    groups: "/groups",
+    groupDetail: (id: string) => `/groups/${id}`,
+    expenses: "/expenses",
+    newExpense: "/expenses/new",
+    expenseDetail: (id: string) => `/expenses/${id}`,
+    balances: "/balances",
+    settlements: "/settlements",
+    settlementDetail: (id: string) => `/settlements/${id}`,
+    friends: "/friends",
+    notifications: "/notifications",
+    settings: "/settings",
+  },
+  admin: {
+    dashboard: "/admin",
+    users: "/admin/users",
+    groups: "/admin/groups",
+    auditLogs: "/admin/audit-logs",
+  },
+};
