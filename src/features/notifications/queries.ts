@@ -3,6 +3,7 @@ import "server-only";
 import { db } from "@/app/(backend)/_lib/db";
 import { notifications } from "@/app/(backend)/_lib/db/schema";
 import { eq, desc, isNull, and } from "drizzle-orm";
+import { isUuid } from "@/lib/utils";
 
 export interface SerializedNotification {
   id: string;
@@ -18,6 +19,9 @@ export async function getUserNotificationsQuery(
   userId: string,
   limitCount: number = 50
 ): Promise<SerializedNotification[]> {
+  if (!isUuid(userId)) {
+    return [];
+  }
   const rows = await db
     .select({
       id: notifications.id,
@@ -45,6 +49,9 @@ export async function getUserNotificationsQuery(
 }
 
 export async function getUnreadNotificationsCountQuery(userId: string): Promise<number> {
+  if (!isUuid(userId)) {
+    return 0;
+  }
   const unreadRows = await db
     .select({ id: notifications.id })
     .from(notifications)

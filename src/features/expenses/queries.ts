@@ -2,9 +2,13 @@ import "server-only";
 import { db } from "@/app/(backend)/_lib/db";
 import { expenses, expenseSplits, groups, users } from "@/app/(backend)/_lib/db/schema";
 import { eq, desc, and } from "drizzle-orm";
+import { isUuid } from "@/lib/utils";
 import { ExpenseDetail } from "./types";
 
 export async function getGroupExpensesQuery(groupId: string) {
+  if (!isUuid(groupId)) {
+    return [];
+  }
   const rows = await db
     .select({
       id: expenses.id,
@@ -27,6 +31,9 @@ export async function getGroupExpensesQuery(groupId: string) {
 }
 
 export async function getExpenseDetailQuery(expenseId: string, currentUserId: string): Promise<ExpenseDetail | null> {
+  if (!isUuid(expenseId) || !isUuid(currentUserId)) {
+    return null;
+  }
   const [row] = await db
     .select({
       id: expenses.id,

@@ -2,9 +2,13 @@ import "server-only";
 import { db } from "@/app/(backend)/_lib/db";
 import { groups, groupMembers, groupInvitations, users, expenses, expenseSplits, settlements } from "@/app/(backend)/_lib/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { isUuid } from "@/lib/utils";
 import { GroupDetail, GroupMemberItem } from "./types";
 
 export async function getUserGroupsQuery(userId: string) {
+  if (!isUuid(userId)) {
+    return [];
+  }
   const memberRows = await db
     .select({
       id: groups.id,
@@ -43,6 +47,10 @@ export async function getUserGroupsQuery(userId: string) {
 }
 
 export async function getGroupDetailQuery(groupId: string, userId: string): Promise<GroupDetail | null> {
+  if (!isUuid(groupId) || !isUuid(userId)) {
+    return null;
+  }
+
   // Check user is a member of the group
   const [membership] = await db
     .select()
@@ -247,6 +255,10 @@ export async function getGroupInvitePreviewQuery(token: string) {
 }
 
 export async function getGroupInvitesListQuery(groupId: string, userId: string) {
+  if (!isUuid(groupId) || !isUuid(userId)) {
+    return [];
+  }
+
   // Check user is active member
   const [membership] = await db
     .select()

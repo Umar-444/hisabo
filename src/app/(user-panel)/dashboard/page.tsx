@@ -5,6 +5,7 @@ import { db } from "@/app/(backend)/_lib/db";
 import { groups, groupMembers, expenses } from "@/app/(backend)/_lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { ui } from "@/lib/ui";
+import { isUuid } from "@/lib/utils";
 import {
   CreditCard,
   PlusCircle,
@@ -69,16 +70,18 @@ export default async function DashboardPage() {
   // Fetch groups
   let userGroups: { id: string; name: string; defaultCurrency: string; role: string }[] = [];
   try {
-    userGroups = await db
-      .select({
-        id: groups.id,
-        name: groups.name,
-        defaultCurrency: groups.defaultCurrency,
-        role: groupMembers.role,
-      })
-      .from(groupMembers)
-      .innerJoin(groups, eq(groupMembers.groupId, groups.id))
-      .where(eq(groupMembers.userId, session.id));
+    if (isUuid(session.id)) {
+      userGroups = await db
+        .select({
+          id: groups.id,
+          name: groups.name,
+          defaultCurrency: groups.defaultCurrency,
+          role: groupMembers.role,
+        })
+        .from(groupMembers)
+        .innerJoin(groups, eq(groupMembers.groupId, groups.id))
+        .where(eq(groupMembers.userId, session.id));
+    }
   } catch (e) {
     console.error("Error loading groups:", e);
   }

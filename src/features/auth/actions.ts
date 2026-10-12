@@ -103,7 +103,7 @@ export async function loginAction(
     // If DB is temporarily unreachable, support demo login for Umar
     if (email === "umar@hisabo.com" && password === "Admin@Hisabo2026!") {
       await setUserSessionCookie({
-        id: "usr-01",
+        id: "2667e019-2e47-4911-8bb9-f60a9c4059b4",
         email: "umar@hisabo.com",
         name: "Umar Farooq",
         username: "umar",

@@ -49,11 +49,36 @@ export function verifyToken(token: string): UserSession | null {
   }
 }
 
+import { db } from "@/app/(backend)/_lib/db";
+import { users } from "@/app/(backend)/_lib/db/schema";
+import { eq } from "drizzle-orm";
+import { isUuid } from "@/lib/utils";
+
 export async function getUserSession(): Promise<UserSession | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
-  return verifyToken(token);
+  const session = verifyToken(token);
+  if (!session) return null;
+
+  // Auto-heal legacy or mock sessions with non-UUID id (e.g. "usr-01")
+  if (!isUuid(session.id)) {
+    try {
+      const [dbUser] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, session.email.toLowerCase()))
+        .limit(1);
+
+      if (dbUser && isUuid(dbUser.id)) {
+        session.id = dbUser.id;
+      }
+    } catch (e) {
+      console.warn("Could not heal session UUID from database:", e);
+    }
+  }
+
+  return session;
 }
 
 export async function setUserSessionCookie(session: Omit<UserSession, "expiresAt">) {
