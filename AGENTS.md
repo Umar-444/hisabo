@@ -311,7 +311,8 @@ Tailwind CSS v4 CSS-first token system without `tailwind.config.js`:
 }
 ```
 
-### Styling Recipes (`src/lib/ui.ts`)
+### Styling Recipes (`src/lib/ui.ts` & `USER-DASHBOARD-DESIGN-SYSTEM.md`)
+**`USER-DASHBOARD-DESIGN-SYSTEM.md` is the binding master design guide for all User Dashboard and App Panel interfaces.**  
 **`src/lib/ui.ts` is the single source of truth for component styling class recipes.**  
 Do **NOT** create redundant styling wrapper components (`Button.tsx`, `Input.tsx`, `Card.tsx`). Use native HTML elements with classes from `ui.ts`:
 
@@ -319,8 +320,11 @@ Do **NOT** create redundant styling wrapper components (`Button.tsx`, `Input.tsx
 // src/lib/ui.ts
 export const ui = {
   btn: ({ variant = "primary", size = "md" }: BtnOptions) => cn(...),
-  input: "w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20",
-  card: "rounded-2xl border border-slate-100 bg-white p-6 shadow-sm",
+  input: "w-full rounded-[14px] border border-slate-200 bg-white px-4 py-2.5 text-sm text-[#0F172A]...",
+  heroCard: "relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#185CFF] via-[#1552E6] to-[#0D40C9]...",
+  settleSmartBanner: "flex items-center gap-3.5 rounded-[16px] border border-slate-200/90 bg-white p-4...",
+  categoryTile: "flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[14px] bg-[#EBF2FF]...",
+  transactionRow: "flex items-center gap-3.5 py-3.5 border-b border-slate-100 last:border-b-0...",
   badge: ({ status }: BadgeOptions) => cn(...),
 };
 ```
