@@ -13,9 +13,10 @@ import {
 
 interface Props {
   pendingActionsCount: number;
+  isCollapsed?: boolean;
 }
 
-export function UserSidebarNav({ pendingActionsCount }: Props) {
+export function UserSidebarNav({ pendingActionsCount, isCollapsed = false }: Props) {
   const pathname = usePathname();
 
   const navItems = [
@@ -66,22 +67,30 @@ export function UserSidebarNav({ pendingActionsCount }: Props) {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+            title={isCollapsed ? item.label : undefined}
+            className={`flex items-center rounded-lg text-xs font-semibold transition-all ${
+              isCollapsed
+                ? "justify-center p-2.5"
+                : "justify-between px-3 py-2"
+            } ${
               item.isActive
                 ? "bg-[#185CFF]/10 text-[#185CFF] font-bold shadow-2xs"
                 : "text-slate-600 hover:text-[#0F172A] hover:bg-slate-100/80"
             }`}
           >
-            <div className="flex items-center gap-2.5">
+            <div className={`flex items-center ${isCollapsed ? "relative" : "gap-2.5"}`}>
               <Icon
-                className={`h-4 w-4 ${
+                className={`h-4 w-4 shrink-0 ${
                   item.isActive ? "text-[#185CFF]" : "text-slate-400"
                 }`}
               />
-              <span>{item.label}</span>
+              {!isCollapsed && <span>{item.label}</span>}
+              {isCollapsed && item.badge !== undefined && (
+                <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-amber-500 animate-pulse ring-2 ring-white" />
+              )}
             </div>
 
-            {item.badge !== undefined && (
+            {!isCollapsed && item.badge !== undefined && (
               <span className="flex h-4 min-w-[18px] items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-black text-white animate-pulse">
                 {item.badge}
               </span>
