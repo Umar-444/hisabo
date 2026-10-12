@@ -18,6 +18,10 @@ import {
 
 import { getAggregatedBalancesQuery } from "@/features/balances";
 import { fromMinorUnits } from "@/lib/money";
+import {
+  DashboardBalanceHero,
+  SerializedCurrencySummary,
+} from "@/features/balances/components/dashboard-balance-hero";
 
 export const instant = false;
 
@@ -27,18 +31,38 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Fetch live aggregated balance
+  // Fetch live aggregated balance with multi-currency segregation
   const aggregatedBalances = await getAggregatedBalancesQuery(session.id);
-  const netMajor = fromMinorUnits(aggregatedBalances.netTotalMinor);
-  const isPositive = aggregatedBalances.netTotalMinor > BigInt(0);
-  const isZero = aggregatedBalances.netTotalMinor === BigInt(0);
 
-  // Split integer and cents for superscript rendering
-  const absNet = Math.abs(netMajor);
-  const integerStr = Math.floor(absNet).toString();
-  const centsStr = Math.round((absNet - Math.floor(absNet)) * 100).toString().padStart(2, "0");
-  const netDollars = isZero ? "0" : (isPositive ? `+${integerStr}` : `-${integerStr}`);
-  const netCents = centsStr;
+  // Safely serialize byCurrency for Client Component
+  const serializedByCurrency: Record<string, SerializedCurrencySummary> = {};
+  for (const cur of aggregatedBalances.currencies) {
+    const s = aggregatedBalances.byCurrency[cur] || {
+      currency: cur,
+      totalCreditMinor: BigInt(0),
+      totalDebitMinor: BigInt(0),
+      netTotalMinor: BigInt(0),
+    };
+
+    const netMajor = fromMinorUnits(s.netTotalMinor);
+    const absNet = Math.abs(netMajor);
+    const integerStr = Math.floor(absNet).toString();
+    const centsStr = Math.round((absNet - Math.floor(absNet)) * 100)
+      .toString()
+      .padStart(2, "0");
+
+    serializedByCurrency[cur] = {
+      currency: cur,
+      totalCreditMajor: fromMinorUnits(s.totalCreditMinor),
+      totalDebitMajor: fromMinorUnits(s.totalDebitMinor),
+      netTotalMajor: netMajor,
+      isPositive: s.netTotalMinor > BigInt(0),
+      isNegative: s.netTotalMinor < BigInt(0),
+      isZero: s.netTotalMinor === BigInt(0),
+      integerStr,
+      centsStr,
+    };
+  }
 
   // Fetch groups
   let userGroups: { id: string; name: string; defaultCurrency: string; role: string }[] = [];
@@ -108,62 +132,12 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* 2. Signature Chime-Inspired Balance Hero Card */}
-      <div className={ui.heroCard}>
-        {/* Subtle decorative background circles */}
-        <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/10 blur-xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-blue-400/20 blur-xl pointer-events-none" />
-
-        <div className="relative z-10">
-          {/* Card Type Header */}
-          <div className="flex items-center justify-between text-white/80">
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-              <CreditCard className="h-3.5 w-3.5 text-white/90" />
-              <span>Net Position · Available Balance</span>
-            </div>
-            <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-xs">
-              Live
-            </span>
-          </div>
-
-          {/* Large Tabular Balance with Superscript Cents */}
-          <div className="mt-4 flex items-baseline">
-            <span className="font-mono text-2xl font-bold text-white/80 mr-1.5">
-              SAR
-            </span>
-            <span className="text-[46px] font-black leading-none tabular-nums tracking-tight">
-              {netDollars}
-            </span>
-            <span className="text-[26px] font-bold leading-none tabular-nums text-white/85 ml-0.5">
-              .{netCents}
-            </span>
-          </div>
-
-          <p className="mt-2 text-xs font-semibold text-white/75">
-            {isPositive
-              ? "Owed to you by flatmates across 1 active group"
-              : "All balances currently squared away"}
-          </p>
-
-          {/* Embedded Hero Action Buttons */}
-          <div className="mt-6 flex items-center gap-3">
-            <Link
-              href="/expenses/new"
-              className="flex-1 h-11 rounded-[14px] bg-white text-[#185CFF] hover:bg-white/95 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
-            >
-              <PlusCircle className="h-4 w-4 text-[#185CFF]" />
-              Add expense
-            </Link>
-            <Link
-              href="/balances"
-              className="flex-1 h-11 rounded-[14px] bg-white/15 text-white hover:bg-white/20 font-bold text-xs flex items-center justify-center gap-2 backdrop-blur-md transition-all active:scale-[0.98]"
-            >
-              <HandCoins className="h-4 w-4 text-white" />
-              Settle up
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* 2. Signature Chime-Inspired Balance Hero Card (Multi-Currency Partitioned) */}
+      <DashboardBalanceHero
+        currencies={aggregatedBalances.currencies}
+        byCurrency={serializedByCurrency}
+        initialCurrency={aggregatedBalances.currency}
+      />
 
       {/* 3. SettleSmart Banner (Chime SpotMe Equivalent) */}
       <div className={ui.settleSmartBanner}>
@@ -255,10 +229,12 @@ export default async function DashboardPage() {
                         isPayer ? "text-[#10B981]" : "text-[#0F172A]"
                       }`}
                     >
-                      {isPayer ? "+SAR 120.00" : "-SAR 40.00"}
+                      {isPayer
+                        ? `+${exp.currency} ${fromMinorUnits(exp.amountMinor).toFixed(2)}`
+                        : `-${exp.currency} ${fromMinorUnits(exp.amountMinor).toFixed(2)}`}
                     </div>
                     <div className="text-[11px] font-medium text-slate-400 tabular-nums">
-                      Total: SAR 160.00
+                      {isPayer ? "You paid total" : `Total: ${exp.currency} ${fromMinorUnits(exp.amountMinor).toFixed(2)}`}
                     </div>
                   </div>
                 </div>
@@ -276,7 +252,7 @@ export default async function DashboardPage() {
               Active Group Pool
             </h3>
             <span className="text-[11px] font-bold text-slate-500">
-              1 Group
+              {userGroups.length} {userGroups.length === 1 ? "Group" : "Groups"}
             </span>
           </div>
 

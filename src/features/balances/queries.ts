@@ -13,11 +13,20 @@ export interface PeerBalanceItem {
   netMinor: bigint; // positive = peer owes user, negative = user owes peer
 }
 
-export interface AggregatedBalancesResult {
-  totalCreditMinor: bigint; // money owed to user
-  totalDebitMinor: bigint;  // money user owes
-  netTotalMinor: bigint;    // credit - debit
+export interface CurrencyBalanceSummary {
   currency: string;
+  totalCreditMinor: bigint; // money owed to user in this currency
+  totalDebitMinor: bigint;  // money user owes in this currency
+  netTotalMinor: bigint;    // credit - debit in this currency
+}
+
+export interface AggregatedBalancesResult {
+  totalCreditMinor: bigint;
+  totalDebitMinor: bigint;
+  netTotalMinor: bigint;
+  currency: string;
+  currencies: string[];
+  byCurrency: Record<string, CurrencyBalanceSummary>;
   peerBalances: PeerBalanceItem[];
 }
 
@@ -39,6 +48,15 @@ export async function getAggregatedBalancesQuery(userId: string): Promise<Aggreg
       totalDebitMinor: BigInt(0),
       netTotalMinor: BigInt(0),
       currency: "SAR",
+      currencies: ["SAR"],
+      byCurrency: {
+        SAR: {
+          currency: "SAR",
+          totalCreditMinor: BigInt(0),
+          totalDebitMinor: BigInt(0),
+          netTotalMinor: BigInt(0),
+        },
+      },
       peerBalances: [],
     };
   }
@@ -146,8 +164,19 @@ export async function getAggregatedBalancesQuery(userId: string): Promise<Aggreg
     }
   }
 
-  let totalCreditMinor = BigInt(0);
-  let totalDebitMinor = BigInt(0);
+  // Initialize multi-currency summaries for all user groups
+  const byCurrency: Record<string, CurrencyBalanceSummary> = {};
+  for (const g of userGroupRows) {
+    if (!byCurrency[g.currency]) {
+      byCurrency[g.currency] = {
+        currency: g.currency,
+        totalCreditMinor: BigInt(0),
+        totalDebitMinor: BigInt(0),
+        netTotalMinor: BigInt(0),
+      };
+    }
+  }
+
   const peerBalances: PeerBalanceItem[] = [];
 
   for (const [key, net] of Object.entries(pairwiseNet)) {
@@ -157,33 +186,72 @@ export async function getAggregatedBalancesQuery(userId: string): Promise<Aggreg
     const groupInfo = userGroupRows.find((g) => g.groupId === grpId);
     const peerInfo = membersByGroup[grpId]?.[peerId];
 
-    if (net > BigInt(0)) {
-      totalCreditMinor += net;
-    } else {
-      totalDebitMinor += -net;
+    if (!groupInfo) continue;
+    const cur = groupInfo.currency;
+
+    if (!byCurrency[cur]) {
+      byCurrency[cur] = {
+        currency: cur,
+        totalCreditMinor: BigInt(0),
+        totalDebitMinor: BigInt(0),
+        netTotalMinor: BigInt(0),
+      };
     }
 
-    if (groupInfo && peerInfo) {
+    if (net > BigInt(0)) {
+      byCurrency[cur].totalCreditMinor += net;
+    } else {
+      byCurrency[cur].totalDebitMinor += -net;
+    }
+
+    if (peerInfo) {
       peerBalances.push({
         peerId,
         peerName: peerInfo.name,
         peerUsername: peerInfo.username,
         groupId: grpId,
         groupName: groupInfo.groupName,
-        currency: groupInfo.currency,
+        currency: cur,
         netMinor: net,
       });
     }
   }
 
-  // Sort: debts owed to user first, then debts user owes
+  // Compute netTotalMinor for each currency
+  for (const cur of Object.keys(byCurrency)) {
+    byCurrency[cur].netTotalMinor =
+      byCurrency[cur].totalCreditMinor - byCurrency[cur].totalDebitMinor;
+  }
+
+  // Sort peer balances: debts owed to user first, then debts user owes
   peerBalances.sort((a, b) => (b.netMinor > a.netMinor ? 1 : -1));
 
+  const currenciesList = Object.keys(byCurrency);
+  // Pick primary currency: first currency with non-zero activity, else first group currency, else SAR
+  const primaryCurrency =
+    currenciesList.find(
+      (c) =>
+        byCurrency[c].netTotalMinor !== BigInt(0) ||
+        byCurrency[c].totalCreditMinor !== BigInt(0) ||
+        byCurrency[c].totalDebitMinor !== BigInt(0)
+    ) ||
+    currenciesList[0] ||
+    "SAR";
+
+  const primarySummary = byCurrency[primaryCurrency] || {
+    currency: primaryCurrency,
+    totalCreditMinor: BigInt(0),
+    totalDebitMinor: BigInt(0),
+    netTotalMinor: BigInt(0),
+  };
+
   return {
-    totalCreditMinor,
-    totalDebitMinor,
-    netTotalMinor: totalCreditMinor - totalDebitMinor,
-    currency: userGroupRows[0]?.currency || "SAR",
+    totalCreditMinor: primarySummary.totalCreditMinor,
+    totalDebitMinor: primarySummary.totalDebitMinor,
+    netTotalMinor: primarySummary.netTotalMinor,
+    currency: primaryCurrency,
+    currencies: currenciesList.length > 0 ? currenciesList : [primaryCurrency],
+    byCurrency,
     peerBalances,
   };
 }
