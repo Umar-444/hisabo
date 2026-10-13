@@ -1,6 +1,10 @@
 import { getUserSession } from "@/lib/auth/user-session";
 import { redirect, notFound } from "next/navigation";
-import { getGroupDetailQuery, getGroupInvitesListQuery } from "@/features/groups";
+import {
+  getGroupDetailQuery,
+  getGroupInvitesListQuery,
+  getGroupActivityLogQuery,
+} from "@/features/groups";
 import { getGroupExpensesQuery } from "@/features/expenses";
 import { fromMinorUnits } from "@/lib/money";
 import { ui } from "@/lib/ui";
@@ -14,8 +18,11 @@ import {
   Building2,
   Share2,
   Calendar,
+  Lock,
 } from "lucide-react";
 import { GroupInviteModalClient } from "@/features/groups/components/group-invite-modal";
+import { GroupGovernanceCard } from "@/features/groups/components/group-governance-card";
+import { GroupActivityList } from "@/features/groups/components/group-activity-list";
 
 export const instant = false;
 
@@ -46,16 +53,18 @@ export default async function GroupDetailPage({
     notFound();
   }
 
-  const [expensesList, existingInvites] = await Promise.all([
+  const [expensesList, existingInvites, activityLog] = await Promise.all([
     getGroupExpensesQuery(id),
     getGroupInvitesListQuery(id, session.id),
+    getGroupActivityLogQuery(id),
   ]);
   const userNetMajor = fromMinorUnits(group.userNetBalanceMinor);
   const isPositive = group.userNetBalanceMinor > BigInt(0);
   const isZero = group.userNetBalanceMinor === BigInt(0);
+  const isArchived = (group as any).status === "archived";
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5 pb-24">
+    <div className="w-full space-y-5 pb-24">
       {/* Header Bar */}
       <div className="flex items-center justify-between pt-2">
         <Link
@@ -73,6 +82,23 @@ export default async function GroupDetailPage({
           existingInvites={existingInvites}
         />
       </div>
+
+      {/* Archived Notice Banner */}
+      {isArchived && (
+        <div className="flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-100 p-3.5 shadow-2xs">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-700 text-white">
+            <Lock className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold text-slate-900">
+              Archived Group Pool (Read-Only)
+            </div>
+            <div className="text-[11px] text-slate-600">
+              This apartment/trip pool has been closed. Historical records and receipts are preserved.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Group Hero Info */}
       <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-xs relative overflow-hidden">
@@ -254,6 +280,19 @@ export default async function GroupDetailPage({
           </div>
         )}
       </div>
+
+      {/* Group Governance & Closure Controls (TASK-13) */}
+      <GroupGovernanceCard
+        groupId={group.id}
+        groupName={group.name}
+        isOwner={group.currentUserRole === "owner"}
+        status={(group as any).status || "active"}
+        userNetBalanceMinor={group.userNetBalanceMinor.toString()}
+        currency={group.defaultCurrency}
+      />
+
+      {/* Group Activity & Audit Log Feed (TASK-14) */}
+      <GroupActivityList activityLog={activityLog} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { createSettlementSchema, CreateSettlementInput } from "./schema";
 import { toMinorUnits } from "@/lib/money";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
+import { createInternalNotification } from "@/features/notifications";
 
 export async function recordSettlementAction(input: CreateSettlementInput) {
   const session = await getUserSession();
@@ -64,6 +65,14 @@ export async function recordSettlementAction(input: CreateSettlementInput) {
       return newSettlement.id;
     });
 
+    await createInternalNotification(
+      payeeId,
+      "settlement_claimed",
+      "Settlement Payment Claimed",
+      `${session.name} claimed they transferred ${currency} ${amount.toFixed(2)} to you. Please confirm receipt or review.`,
+      "/settlements"
+    );
+
     revalidatePath("/dashboard");
     revalidatePath("/balances");
     revalidatePath("/settlements");
@@ -114,6 +123,14 @@ export async function confirmSettlementAction(settlementId: string) {
       });
     });
 
+    await createInternalNotification(
+      settlement.payerId,
+      "settlement_confirmed",
+      "Settlement Confirmed 🎉",
+      `Your payment of ${settlement.currency} ${(Number(settlement.amountMinor) / 100).toFixed(2)} was confirmed by ${session.name}.`,
+      "/balances"
+    );
+
     revalidatePath("/dashboard");
     revalidatePath("/balances");
     revalidatePath("/settlements");
@@ -160,6 +177,14 @@ export async function disputeSettlementAction(settlementId: string, reason: stri
         payload: { settlementId, disputedBy: session.id, reason },
       });
     });
+
+    await createInternalNotification(
+      settlement.payerId,
+      "dispute_raised",
+      "Payment Claim Disputed ⚠️",
+      `Your settlement claim was marked as disputed by ${session.name}. Reason: ${reason}`,
+      "/settlements"
+    );
 
     revalidatePath("/dashboard");
     revalidatePath("/balances");

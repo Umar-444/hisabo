@@ -520,3 +520,100 @@ export async function updateMemberRoleAction(
   }
 }
 
+export async function archiveGroupAction(groupId: string) {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Authentication required" };
+  }
+
+  try {
+    // 1. Verify caller is owner
+    const [groupRecord] = await db
+      .select()
+      .from(groups)
+      .where(eq(groups.id, groupId))
+      .limit(1);
+
+    if (!groupRecord) {
+      return { success: false, error: "Group not found." };
+    }
+
+    if (groupRecord.ownerId !== session.id) {
+      return { success: false, error: "Only the group owner can archive or close this group." };
+    }
+
+    // 2. Financial check: verify caller net balance is zero
+    const callerNet = await getMemberNetPositionInGroup(groupId, session.id);
+    if (callerNet !== BigInt(0)) {
+      const amountMajor = Math.abs(fromMinorUnits(callerNet)).toFixed(2);
+      return {
+        success: false,
+        error: `Cannot archive group: You have an unsettled balance of ${amountMajor} in this group. All member debts must be zero before archiving.`,
+      };
+    }
+
+    // 3. Mark group as archived
+    await db
+      .update(groups)
+      .set({ status: "archived", updatedAt: new Date() })
+      .where(eq(groups.id, groupId));
+
+    await db.insert(outboxEvents).values({
+      eventType: "group.archived",
+      payload: {
+        groupId,
+        archivedBy: session.id,
+      },
+    });
+
+    revalidatePath("/groups");
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Group archived successfully. Records are now in read-only mode." };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to archive group." };
+  }
+}
+
+export async function unarchiveGroupAction(groupId: string) {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Authentication required" };
+  }
+
+  try {
+    const [groupRecord] = await db
+      .select()
+      .from(groups)
+      .where(eq(groups.id, groupId))
+      .limit(1);
+
+    if (!groupRecord || groupRecord.ownerId !== session.id) {
+      return { success: false, error: "Only the group owner can re-activate this group." };
+    }
+
+    await db
+      .update(groups)
+      .set({ status: "active", updatedAt: new Date() })
+      .where(eq(groups.id, groupId));
+
+    await db.insert(outboxEvents).values({
+      eventType: "group.reactivated",
+      payload: {
+        groupId,
+        reactivatedBy: session.id,
+      },
+    });
+
+    revalidatePath("/groups");
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Group re-activated successfully." };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to reactivate group." };
+  }
+}
+
+

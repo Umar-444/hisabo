@@ -9,6 +9,7 @@ export const groups = pgTable("groups", {
     .notNull()
     .references(() => users.id, { onDelete: "restrict" }),
   defaultCurrency: varchar("default_currency", { length: 3 }).default("SAR").notNull(),
+  status: varchar("status", { length: 20 }).default("active").notNull(), // 'active' | 'archived'
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });

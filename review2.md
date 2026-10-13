@@ -37,10 +37,10 @@ graph TD
 | Epic | Focus Area | Status | Priority |
 | :--- | :--- | :---: | :---: |
 | **Epic 1** | User Profile, Preferences & Account Management | Completed | `P0` |
-| **Epic 2** | Notification Center & Transactional Outbox Worker | In Progress | `P0` |
-| **Epic 3** | Advanced Group Governance & Closure Lifecycles | In Progress | `P1` |
-| **Epic 4** | Platform Admin Portal & Moderation Queue | Partially Built | `P1` |
-| **Epic 5** | Financial Search, Reporting & CSV Data Exports | In Progress | `P1` |
+| **Epic 2** | Notification Center & Transactional Outbox Worker | Completed | `P0` |
+| **Epic 3** | Advanced Group Governance & Closure Lifecycles | Completed | `P1` |
+| **Epic 4** | Platform Admin Portal & Moderation Queue | Completed | `P1` |
+| **Epic 5** | Financial Search, Reporting & CSV Data Exports | Completed | `P1` |
 | **Epic 6** | Growth: Receipts S3 Storage, Recurring Expenses & Push | Planned | `P2` |
 
 ---

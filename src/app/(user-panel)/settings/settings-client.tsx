@@ -22,6 +22,7 @@ import {
   Trash2,
   Copy,
   Info,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -431,6 +432,58 @@ export function SettingsClientView({ user }: Props) {
                   }`}
                 />
               </button>
+            </div>
+          </div>
+
+          {/* Notification Delivery Preferences Matrix (TASK-07) */}
+          <div className="rounded-xl border border-[#e5e3df] bg-white p-5 shadow-2xs space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#ede9e4]">
+              <Bell className="h-4 w-4 text-[#185cff]" />
+              <h2 className="text-xs font-bold text-[#0a1530] uppercase tracking-wider">
+                Notification Delivery Preferences
+              </h2>
+            </div>
+
+            <div className="flex items-center justify-between py-1.5">
+              <div>
+                <div className="text-xs font-semibold text-[#1a1a1a]">
+                  Expense Added & Split Notifications
+                </div>
+                <div className="text-[11px] text-[#787671]">
+                  Receive alerts when someone splits groceries, dinner, or rent with you.
+                </div>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                In-App + Email
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between py-1.5 border-t border-[#ede9e4]">
+              <div>
+                <div className="text-xs font-semibold text-[#1a1a1a]">
+                  Settlement Claims & Verifications
+                </div>
+                <div className="text-[11px] text-[#787671]">
+                  Alert when a flatmate claims an offline transfer to you.
+                </div>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                In-App + Email
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between py-1.5 border-t border-[#ede9e4]">
+              <div>
+                <div className="text-xs font-semibold text-[#1a1a1a]">
+                  Dispute Alerts
+                </div>
+                <div className="text-[11px] text-[#787671]">
+                  Immediate notification when a settlement is disputed.
+                </div>
+              </div>
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                High Priority
+              </span>
             </div>
           </div>
         </div>
