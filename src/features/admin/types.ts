@@ -41,3 +41,14 @@ export interface AdminStats {
   outboxPending: number;
   outboxSuccessRate: number;
 }
+
+export interface AdminOutboxEventRecord {
+  id: string;
+  eventType: string;
+  payload: Record<string, any>;
+  status: "pending" | "processing" | "completed" | "failed";
+  attempts: number;
+  createdAt: string;
+  processedAt?: string | null;
+}
+

@@ -53,8 +53,10 @@ import { db } from "@/app/(backend)/_lib/db";
 import { users } from "@/app/(backend)/_lib/db/schema";
 import { eq } from "drizzle-orm";
 import { isUuid } from "@/lib/utils";
+import { connection } from "next/server";
 
 export async function getUserSession(): Promise<UserSession | null> {
+  await connection();
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;

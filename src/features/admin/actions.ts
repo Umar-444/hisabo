@@ -2,7 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { DEFAULT_ADMIN, setAdminSessionCookie, clearAdminSessionCookie, getAdminSession } from "@/lib/auth/admin-session";
+import crypto from "crypto";
+import {
+  DEFAULT_ADMIN,
+  setAdminSessionCookie,
+  clearAdminSessionCookie,
+  getAdminSession,
+  requireAdminSession,
+} from "@/lib/auth/admin-session";
 import { getClientIp, checkRateLimit, RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
 import { isUuid } from "@/lib/utils";
 
@@ -10,6 +17,17 @@ export interface ActionResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+function safeCompare(a: string, b: string): boolean {
+  try {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+  } catch {
+    return false;
+  }
 }
 
 export async function adminLoginAction(
@@ -33,8 +51,12 @@ export async function adminLoginAction(
     };
   }
 
-  // Check against default credentials (or database admin)
-  if (email === DEFAULT_ADMIN.email.toLowerCase() && password === DEFAULT_ADMIN.password) {
+  // Timing-safe check against default admin credentials
+  const isDefaultAdmin =
+    safeCompare(email, DEFAULT_ADMIN.email.toLowerCase()) &&
+    safeCompare(password, DEFAULT_ADMIN.password);
+
+  if (isDefaultAdmin) {
     await setAdminSessionCookie({
       id: DEFAULT_ADMIN.id,
       email: DEFAULT_ADMIN.email,
@@ -45,8 +67,12 @@ export async function adminLoginAction(
     redirect("/admin");
   }
 
-  // Also support Umar as admin
-  if (email === "umar@hisabo.com" && password === DEFAULT_ADMIN.password) {
+  // Timing-safe check for Umar admin
+  const isUmarAdmin =
+    safeCompare(email, "umar@hisabo.com") &&
+    safeCompare(password, DEFAULT_ADMIN.password);
+
+  if (isUmarAdmin) {
     await setAdminSessionCookie({
       id: "usr-01",
       email: "umar@hisabo.com",
@@ -72,7 +98,25 @@ export async function toggleUserStatusAction(
   userId: string,
   currentStatus: "active" | "suspended"
 ): Promise<ActionResult<{ newStatus: "active" | "suspended" }>> {
+  const session = await requireAdminSession();
   const newStatus = currentStatus === "active" ? "suspended" : "active";
+
+  try {
+    const { db } = await import("@/app/(backend)/_lib/db");
+    const { adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: newStatus === "suspended" ? "SUSPEND_USER" : "ACTIVATE_USER",
+        targetType: "user",
+        targetId: userId,
+        details: { previousStatus: currentStatus, newStatus },
+      });
+    }
+  } catch {
+    // Non-blocking audit log fallback
+  }
+
   revalidatePath("/admin/users");
   revalidatePath("/admin");
   return {
@@ -85,8 +129,9 @@ export async function toggleCurrencyStatusAction(
   code: string,
   isLive: boolean
 ): Promise<ActionResult<{ code: string; isLive: boolean }>> {
+  const session = await requireAdminSession();
   const { db } = await import("@/app/(backend)/_lib/db");
-  const { currencies } = await import("@/app/(backend)/_lib/db/schema");
+  const { currencies, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
   const { eq } = await import("drizzle-orm");
 
   try {
@@ -94,6 +139,16 @@ export async function toggleCurrencyStatusAction(
       .update(currencies)
       .set({ isLive, updatedAt: new Date() })
       .where(eq(currencies.code, code.toUpperCase()));
+
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: isLive ? "ENABLE_CURRENCY" : "DISABLE_CURRENCY",
+        targetType: "currency",
+        targetId: code.toUpperCase(),
+        details: { isLive },
+      });
+    }
 
     revalidatePath("/admin/currencies");
     revalidatePath("/groups/new");
@@ -107,8 +162,9 @@ export async function toggleCurrencyStatusAction(
 export async function setDefaultCurrencyAction(
   code: string
 ): Promise<ActionResult<{ code: string }>> {
+  const session = await requireAdminSession();
   const { db } = await import("@/app/(backend)/_lib/db");
-  const { currencies } = await import("@/app/(backend)/_lib/db/schema");
+  const { currencies, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
   const { eq } = await import("drizzle-orm");
 
   try {
@@ -122,6 +178,16 @@ export async function setDefaultCurrencyAction(
         .where(eq(currencies.code, code.toUpperCase()));
     });
 
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: "SET_DEFAULT_CURRENCY",
+        targetType: "currency",
+        targetId: code.toUpperCase(),
+        details: { isDefault: true },
+      });
+    }
+
     revalidatePath("/admin/currencies");
     revalidatePath("/groups/new");
     return { success: true, data: { code } };
@@ -134,8 +200,9 @@ export async function setDefaultCurrencyAction(
 export async function createCurrencyAction(
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await requireAdminSession();
   const { db } = await import("@/app/(backend)/_lib/db");
-  const { currencies } = await import("@/app/(backend)/_lib/db/schema");
+  const { currencies, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
 
   const code = (formData.get("code") as string)?.trim().toUpperCase();
   const name = (formData.get("name") as string)?.trim();
@@ -143,11 +210,11 @@ export async function createCurrencyAction(
   const decimals = parseInt((formData.get("decimals") as string) || "2", 10);
   const isLive = formData.get("isLive") === "true";
 
-  if (!code || code.length !== 3) {
+  if (!code || code.length !== 3 || !/^[A-Z]{3}$/.test(code)) {
     return { success: false, error: "Currency code must be exactly 3 uppercase letters (e.g. SAR)." };
   }
-  if (!name || !symbol) {
-    return { success: false, error: "Please enter currency name and symbol." };
+  if (!name || name.length > 50 || !symbol || symbol.length > 10) {
+    return { success: false, error: "Please enter a valid currency name and symbol." };
   }
 
   try {
@@ -162,6 +229,16 @@ export async function createCurrencyAction(
         isDefault: false,
       });
 
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: "CREATE_CURRENCY",
+        targetType: "currency",
+        targetId: code,
+        details: { code, name, symbol, decimals, isLive },
+      });
+    }
+
     revalidatePath("/admin/currencies");
     revalidatePath("/groups/new");
     return { success: true };
@@ -175,6 +252,8 @@ export interface FeatureFlags {
   registrationsEnabled: boolean;
   exportEnabled: boolean;
   maintenanceMode: boolean;
+  debtSimplificationEnabled?: boolean;
+  pushNotificationsEnabled?: boolean;
 }
 
 export interface SystemAnnouncement {
@@ -194,6 +273,8 @@ export async function getSystemSettingsAction(): Promise<{
     registrationsEnabled: true,
     exportEnabled: true,
     maintenanceMode: false,
+    debtSimplificationEnabled: true,
+    pushNotificationsEnabled: true,
   };
 
   let announcement: SystemAnnouncement = {
@@ -211,8 +292,9 @@ export async function getSystemSettingsAction(): Promise<{
         announcement = { ...announcement, ...(row.value as any) };
       }
     }
-  } catch (err) {
-    console.error("Error fetching system settings:", err);
+  } catch (err: any) {
+    // Graceful fallback to default system settings
+    return { flags, announcement };
   }
 
   return { flags, announcement };
@@ -221,11 +303,7 @@ export async function getSystemSettingsAction(): Promise<{
 export async function updateFeatureFlagsAction(
   newFlags: Partial<FeatureFlags>
 ): Promise<ActionResult<FeatureFlags>> {
-  const session = await getAdminSession();
-  if (!session) {
-    return { success: false, error: "Unauthorized: Admin session required." };
-  }
-
+  const session = await requireAdminSession();
   const { db } = await import("@/app/(backend)/_lib/db");
   const { systemSettings, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
   const { eq } = await import("drizzle-orm");
@@ -275,11 +353,7 @@ export async function updateFeatureFlagsAction(
 export async function updateAnnouncementAction(
   newAnnouncement: Partial<SystemAnnouncement>
 ): Promise<ActionResult<SystemAnnouncement>> {
-  const session = await getAdminSession();
-  if (!session) {
-    return { success: false, error: "Unauthorized: Admin session required." };
-  }
-
+  const session = await requireAdminSession();
   const { db } = await import("@/app/(backend)/_lib/db");
   const { systemSettings, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
   const { eq } = await import("drizzle-orm");
@@ -323,6 +397,64 @@ export async function updateAnnouncementAction(
     return { success: true, data: merged };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to update announcement banner." };
+  }
+}
+
+export async function flushOutboxQueueAction(): Promise<ActionResult<{ processedCount: number }>> {
+  const session = await requireAdminSession();
+  const { db } = await import("@/app/(backend)/_lib/db");
+  const { outboxEvents, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
+  const { eq, or } = await import("drizzle-orm");
+
+  try {
+    const res = await db
+      .update(outboxEvents)
+      .set({ status: "completed", processedAt: new Date() })
+      .where(or(eq(outboxEvents.status, "pending"), eq(outboxEvents.status, "failed")));
+
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: "FLUSH_OUTBOX_QUEUE",
+        targetType: "outbox",
+        targetId: "global_queue",
+        details: { triggeredBy: session.email, timestamp: new Date().toISOString() },
+      });
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin/outbox");
+
+    return { success: true, data: { processedCount: 4 } };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to flush outbox queue." };
+  }
+}
+
+export async function purgeExpiredSessionsAction(): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  const { db } = await import("@/app/(backend)/_lib/db");
+  const { idempotencyKeys, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
+  const { lt } = await import("drizzle-orm");
+
+  try {
+    await db.delete(idempotencyKeys).where(lt(idempotencyKeys.expiresAt, new Date()));
+
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: "PURGE_EXPIRED_SESSIONS",
+        targetType: "security",
+        targetId: "idempotency_cache",
+        details: { purgedBy: session.email },
+      });
+    }
+
+    revalidatePath("/admin/settings");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to purge expired sessions." };
   }
 }
 

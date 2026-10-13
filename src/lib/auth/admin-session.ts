@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import crypto from "crypto";
 
 export interface AdminSession {
@@ -27,6 +28,17 @@ function sign(payload: string): string {
   return hmac.digest("hex");
 }
 
+function safeCompare(a: string, b: string): boolean {
+  try {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+  } catch {
+    return false;
+  }
+}
+
 export function createToken(session: Omit<AdminSession, "expiresAt">): string {
   // 7 days expiration
   const fullSession: AdminSession = {
@@ -45,19 +57,30 @@ export function verifyToken(token: string): AdminSession | null {
     if (!base64 || !signature) return null;
 
     const expectedSignature = sign(base64);
-    if (signature !== expectedSignature) return null;
+    if (!safeCompare(signature, expectedSignature)) return null;
 
     const json = Buffer.from(base64, "base64url").toString("utf8");
     const session: AdminSession = JSON.parse(json);
 
     if (Date.now() > session.expiresAt) return null;
+    if (session.role !== "admin") return null;
+
     return session;
   } catch {
     return null;
   }
 }
 
+export async function requireAdminSession(): Promise<AdminSession> {
+  const session = await getAdminSession();
+  if (!session || session.role !== "admin") {
+    throw new Error("Unauthorized: Administrative credentials and role required.");
+  }
+  return session;
+}
+
 export async function getAdminSession(): Promise<AdminSession | null> {
+  await connection();
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
