@@ -2,8 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { DEFAULT_ADMIN, setAdminSessionCookie, clearAdminSessionCookie } from "@/lib/auth/admin-session";
+import { DEFAULT_ADMIN, setAdminSessionCookie, clearAdminSessionCookie, getAdminSession } from "@/lib/auth/admin-session";
 import { getClientIp, checkRateLimit, RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
+import { isUuid } from "@/lib/utils";
 
 export interface ActionResult<T = unknown> {
   success: boolean;
@@ -169,4 +170,160 @@ export async function createCurrencyAction(
     return { success: false, error: err.message || "Failed to create currency (may already exist)." };
   }
 }
+
+export interface FeatureFlags {
+  registrationsEnabled: boolean;
+  exportEnabled: boolean;
+  maintenanceMode: boolean;
+}
+
+export interface SystemAnnouncement {
+  active: boolean;
+  message: string;
+  type: "info" | "warning" | "alert";
+}
+
+export async function getSystemSettingsAction(): Promise<{
+  flags: FeatureFlags;
+  announcement: SystemAnnouncement;
+}> {
+  const { db } = await import("@/app/(backend)/_lib/db");
+  const { systemSettings } = await import("@/app/(backend)/_lib/db/schema");
+
+  let flags: FeatureFlags = {
+    registrationsEnabled: true,
+    exportEnabled: true,
+    maintenanceMode: false,
+  };
+
+  let announcement: SystemAnnouncement = {
+    active: false,
+    message: "",
+    type: "info",
+  };
+
+  try {
+    const rows = await db.select().from(systemSettings);
+    for (const row of rows) {
+      if (row.key === "feature_flags" && row.value) {
+        flags = { ...flags, ...(row.value as any) };
+      } else if (row.key === "announcement" && row.value) {
+        announcement = { ...announcement, ...(row.value as any) };
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching system settings:", err);
+  }
+
+  return { flags, announcement };
+}
+
+export async function updateFeatureFlagsAction(
+  newFlags: Partial<FeatureFlags>
+): Promise<ActionResult<FeatureFlags>> {
+  const session = await getAdminSession();
+  if (!session) {
+    return { success: false, error: "Unauthorized: Admin session required." };
+  }
+
+  const { db } = await import("@/app/(backend)/_lib/db");
+  const { systemSettings, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
+  const { eq } = await import("drizzle-orm");
+
+  try {
+    const current = await getSystemSettingsAction();
+    const merged: FeatureFlags = { ...current.flags, ...newFlags };
+
+    const [existing] = await db
+      .select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, "feature_flags"))
+      .limit(1);
+
+    if (existing) {
+      await db
+        .update(systemSettings)
+        .set({ value: merged, updatedAt: new Date() })
+        .where(eq(systemSettings.key, "feature_flags"));
+    } else {
+      await db
+        .insert(systemSettings)
+        .values({ key: "feature_flags", value: merged });
+    }
+
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: "UPDATE_FEATURE_FLAGS",
+        targetType: "system",
+        targetId: "feature_flags",
+        details: merged,
+      });
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/settings");
+    revalidatePath("/dashboard");
+    revalidatePath("/");
+
+    return { success: true, data: merged };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update feature flags." };
+  }
+}
+
+export async function updateAnnouncementAction(
+  newAnnouncement: Partial<SystemAnnouncement>
+): Promise<ActionResult<SystemAnnouncement>> {
+  const session = await getAdminSession();
+  if (!session) {
+    return { success: false, error: "Unauthorized: Admin session required." };
+  }
+
+  const { db } = await import("@/app/(backend)/_lib/db");
+  const { systemSettings, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
+  const { eq } = await import("drizzle-orm");
+
+  try {
+    const current = await getSystemSettingsAction();
+    const merged: SystemAnnouncement = { ...current.announcement, ...newAnnouncement };
+
+    const [existing] = await db
+      .select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, "announcement"))
+      .limit(1);
+
+    if (existing) {
+      await db
+        .update(systemSettings)
+        .set({ value: merged, updatedAt: new Date() })
+        .where(eq(systemSettings.key, "announcement"));
+    } else {
+      await db
+        .insert(systemSettings)
+        .values({ key: "announcement", value: merged });
+    }
+
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: "UPDATE_ANNOUNCEMENT",
+        targetType: "system",
+        targetId: "announcement",
+        details: merged,
+      });
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/settings");
+    revalidatePath("/dashboard");
+    revalidatePath("/");
+
+    return { success: true, data: merged };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update announcement banner." };
+  }
+}
+
 

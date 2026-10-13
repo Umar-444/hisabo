@@ -18,6 +18,7 @@ export interface SerializedPeerBalance {
   peerId: string;
   peerName: string;
   peerUsername: string;
+  paymentHandle?: string | null;
   groupId: string;
   groupName: string;
   currency: string;
@@ -315,6 +316,7 @@ export function BalancesViewClient({
                       <SettleUpModalClient
                         peerId={peer.peerId}
                         peerName={peer.peerName}
+                        peerPaymentHandle={peer.paymentHandle}
                         groupId={peer.groupId}
                         suggestedAmount={Math.abs(peer.netMajor)}
                         currency={peer.currency}

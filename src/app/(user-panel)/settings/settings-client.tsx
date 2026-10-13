@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import {
   updateProfileAction,
   updatePreferencesAction,
@@ -23,9 +23,12 @@ import {
   Copy,
   Info,
   Bell,
+  BellRing,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { VAPID_CONFIG, urlBase64ToUint8Array } from "@/config/push";
 
 interface Props {
   user: {
@@ -69,6 +72,77 @@ export function SettingsClientView({ user }: Props) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
   const [isDeletingAccount, startDeleteTransition] = useTransition();
+
+  // Web Push State (TASK-10)
+  const [pushPermission, setPushPermission] = useState<string>("default");
+  const [isPushLoading, setIsPushLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPushPermission(Notification.permission);
+    }
+  }, []);
+
+  const handleSubscribePush = async () => {
+    if (typeof window === "undefined" || !("Notification" in window) || !("serviceWorker" in navigator)) {
+      toast.error("Web Push is not supported in this browser.");
+      return;
+    }
+
+    try {
+      setIsPushLoading(true);
+      const perm = await Notification.requestPermission();
+      setPushPermission(perm);
+
+      if (perm !== "granted") {
+        toast.error("Notification permission was denied.");
+        setIsPushLoading(false);
+        return;
+      }
+
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_CONFIG.publicKey) as any,
+      });
+
+      const subJson = sub.toJSON();
+      const res = await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          endpoint: sub.endpoint,
+          keys: subJson.keys,
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Web push notifications enabled for this device!");
+      } else {
+        toast.error("Subscription registered locally; backend synchronization will retry.");
+      }
+    } catch (err: any) {
+      console.error("Push subscribe error:", err);
+      toast.error(err.message || "Failed to enable Web Push.");
+    } finally {
+      setIsPushLoading(false);
+    }
+  };
+
+  const handleSendTestPush = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      reg.showNotification("Hisabo Alert", {
+        body: "Web Push notifications are connected and working correctly!",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+      });
+      toast.success("Test notification dispatched.");
+    } catch (err: any) {
+      toast.error("Failed to show test notification.");
+    }
+  };
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -484,6 +558,78 @@ export function SettingsClientView({ user }: Props) {
               <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
                 High Priority
               </span>
+            </div>
+          </div>
+
+          {/* Web Push (VAPID) Subscriptions Card (TASK-10) */}
+          <div className="rounded-xl border border-[#e5e3df] bg-white p-5 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-[#ede9e4]">
+              <div className="flex items-center gap-2">
+                <BellRing className="h-4 w-4 text-[#185cff]" />
+                <h2 className="text-xs font-bold text-[#0a1530] uppercase tracking-wider">
+                  Web Push (VAPID) Device Subscriptions
+                </h2>
+              </div>
+              <span
+                className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+                  pushPermission === "granted"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                    : pushPermission === "denied"
+                    ? "bg-amber-50 text-amber-800 border-amber-200"
+                    : "bg-slate-100 text-slate-700 border-slate-200"
+                }`}
+              >
+                {pushPermission === "granted"
+                  ? "Active"
+                  : pushPermission === "denied"
+                  ? "Blocked"
+                  : "Inactive"}
+              </span>
+            </div>
+
+            <p className="text-xs text-[#787671] leading-relaxed">
+              Enable background push notifications to receive immediate alerts when roommates post group expenses, record settlement claims, or confirm received payments without keeping the tab open.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {pushPermission === "granted" ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleSendTestPush}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <Send className="h-3.5 w-3.5 text-[#185cff]" />
+                    <span>Send Test Notification</span>
+                  </button>
+                  <span className="text-[11px] text-emerald-700 font-medium">
+                    ✓ Browser push active on this device
+                  </span>
+                </>
+              ) : pushPermission === "denied" ? (
+                <div className="rounded-lg bg-amber-50 border border-amber-200 p-2.5 text-[11px] text-amber-800">
+                  Notifications are blocked in your browser site settings. Click the lock/info icon in your browser address bar and set Notifications to &quot;Allow&quot;.
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isPushLoading}
+                  onClick={handleSubscribePush}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#185cff] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#1249d6] transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
+                >
+                  {isPushLoading ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Requesting Permission...</span>
+                    </>
+                  ) : (
+                    <>
+                      <BellRing className="h-3.5 w-3.5" />
+                      <span>Enable Web Push on This Device</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

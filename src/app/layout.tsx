@@ -24,6 +24,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+import { PwaInstallPrompt } from "@/components/layout/pwa-install-prompt";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,6 +40,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-[#F1F5F9] text-[#0F172A] font-sans">
         {children}
+        <PwaInstallPrompt />
       </body>
     </html>
   );

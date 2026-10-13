@@ -54,6 +54,7 @@ export default async function BalancesPage() {
     peerId: peer.peerId,
     peerName: peer.peerName,
     peerUsername: peer.peerUsername,
+    paymentHandle: peer.paymentHandle ?? null,
     groupId: peer.groupId,
     groupName: peer.groupName,
     currency: peer.currency,

@@ -9,6 +9,7 @@ import {
   Coins,
   LogOut,
   ExternalLink,
+  Sliders,
 } from "lucide-react";
 
 export const instant = false;
@@ -85,6 +86,14 @@ export default async function AdminLayout({
             >
               <FileText className="h-4 w-4 text-cyan-400" />
               Audit Trail
+            </Link>
+
+            <Link
+              href="/admin/settings"
+              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors"
+            >
+              <Sliders className="h-4 w-4 text-rose-400" />
+              Platform Controls
             </Link>
           </nav>
         </div>
