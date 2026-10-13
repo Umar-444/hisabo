@@ -13,6 +13,7 @@ import {
   Sparkles,
   ChevronRight,
   Shield,
+  Activity,
 } from "lucide-react";
 
 export const instant = false;
@@ -99,6 +100,14 @@ export default async function AdminLayout({
             >
               <FileText className="h-4 w-4 text-[#0a3663]" />
               <span>Audit Trail</span>
+            </Link>
+
+            <Link
+              href="/admin/outbox"
+              className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#37352f] hover:bg-[#ebe8e1] hover:text-[#1a1a1a] transition-colors"
+            >
+              <Activity className="h-4 w-4 text-[#9c4221]" />
+              <span>Outbox &amp; Tracing</span>
             </Link>
 
             <div className="pt-2 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#a4a097]">

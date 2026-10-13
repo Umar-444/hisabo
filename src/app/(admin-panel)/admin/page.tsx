@@ -23,6 +23,13 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+import {
+  getAdminStatsQuery,
+  getAdminUsersQuery,
+  getAdminGroupsQuery,
+  getAdminAuditLogsQuery,
+} from "@/features/admin/queries";
+
 export const instant = false;
 
 export default async function AdminDashboardPage() {
@@ -31,10 +38,16 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const stats = initialAdminStats;
-  const recentUsers = initialAdminUsers.slice(0, 4);
-  const recentGroups = initialAdminGroups.slice(0, 3);
-  const recentLogs = initialAdminAuditLogs.slice(0, 3);
+  const [stats, allUsers, allGroups, allLogs] = await Promise.all([
+    getAdminStatsQuery(),
+    getAdminUsersQuery(),
+    getAdminGroupsQuery(),
+    getAdminAuditLogsQuery(5),
+  ]);
+
+  const recentUsers = allUsers.slice(0, 4);
+  const recentGroups = allGroups.slice(0, 3);
+  const recentLogs = allLogs.slice(0, 4);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">

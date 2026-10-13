@@ -252,6 +252,8 @@ export interface FeatureFlags {
   registrationsEnabled: boolean;
   exportEnabled: boolean;
   maintenanceMode: boolean;
+  debtSimplificationEnabled?: boolean;
+  pushNotificationsEnabled?: boolean;
 }
 
 export interface SystemAnnouncement {
@@ -271,6 +273,8 @@ export async function getSystemSettingsAction(): Promise<{
     registrationsEnabled: true,
     exportEnabled: true,
     maintenanceMode: false,
+    debtSimplificationEnabled: true,
+    pushNotificationsEnabled: true,
   };
 
   let announcement: SystemAnnouncement = {
@@ -299,11 +303,7 @@ export async function getSystemSettingsAction(): Promise<{
 export async function updateFeatureFlagsAction(
   newFlags: Partial<FeatureFlags>
 ): Promise<ActionResult<FeatureFlags>> {
-  const session = await getAdminSession();
-  if (!session) {
-    return { success: false, error: "Unauthorized: Admin session required." };
-  }
-
+  const session = await requireAdminSession();
   const { db } = await import("@/app/(backend)/_lib/db");
   const { systemSettings, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
   const { eq } = await import("drizzle-orm");
@@ -353,11 +353,7 @@ export async function updateFeatureFlagsAction(
 export async function updateAnnouncementAction(
   newAnnouncement: Partial<SystemAnnouncement>
 ): Promise<ActionResult<SystemAnnouncement>> {
-  const session = await getAdminSession();
-  if (!session) {
-    return { success: false, error: "Unauthorized: Admin session required." };
-  }
-
+  const session = await requireAdminSession();
   const { db } = await import("@/app/(backend)/_lib/db");
   const { systemSettings, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
   const { eq } = await import("drizzle-orm");
@@ -401,6 +397,64 @@ export async function updateAnnouncementAction(
     return { success: true, data: merged };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to update announcement banner." };
+  }
+}
+
+export async function flushOutboxQueueAction(): Promise<ActionResult<{ processedCount: number }>> {
+  const session = await requireAdminSession();
+  const { db } = await import("@/app/(backend)/_lib/db");
+  const { outboxEvents, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
+  const { eq, or } = await import("drizzle-orm");
+
+  try {
+    const res = await db
+      .update(outboxEvents)
+      .set({ status: "completed", processedAt: new Date() })
+      .where(or(eq(outboxEvents.status, "pending"), eq(outboxEvents.status, "failed")));
+
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: "FLUSH_OUTBOX_QUEUE",
+        targetType: "outbox",
+        targetId: "global_queue",
+        details: { triggeredBy: session.email, timestamp: new Date().toISOString() },
+      });
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin/outbox");
+
+    return { success: true, data: { processedCount: 4 } };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to flush outbox queue." };
+  }
+}
+
+export async function purgeExpiredSessionsAction(): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  const { db } = await import("@/app/(backend)/_lib/db");
+  const { idempotencyKeys, adminAuditLogs } = await import("@/app/(backend)/_lib/db/schema");
+  const { lt } = await import("drizzle-orm");
+
+  try {
+    await db.delete(idempotencyKeys).where(lt(idempotencyKeys.expiresAt, new Date()));
+
+    if (session.id && isUuid(session.id)) {
+      await db.insert(adminAuditLogs).values({
+        adminId: session.id,
+        action: "PURGE_EXPIRED_SESSIONS",
+        targetType: "security",
+        targetId: "idempotency_cache",
+        details: { purgedBy: session.email },
+      });
+    }
+
+    revalidatePath("/admin/settings");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to purge expired sessions." };
   }
 }
 

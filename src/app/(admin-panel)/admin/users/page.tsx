@@ -1,5 +1,6 @@
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { redirect } from "next/navigation";
+import { getAdminUsersQuery } from "@/features/admin/queries";
 import { AdminUsersClient } from "./users-client";
 
 export const instant = false;
@@ -10,5 +11,7 @@ export default async function AdminUsersPage() {
     redirect("/admin/login");
   }
 
-  return <AdminUsersClient />;
+  const usersList = await getAdminUsersQuery();
+
+  return <AdminUsersClient initialUsers={usersList} />;
 }

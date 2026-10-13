@@ -15,8 +15,12 @@ import {
   UserX,
 } from "lucide-react";
 
-export function AdminUsersClient() {
-  const [users, setUsers] = useState<AdminUserRecord[]>(initialAdminUsers);
+interface Props {
+  initialUsers?: AdminUserRecord[];
+}
+
+export function AdminUsersClient({ initialUsers = initialAdminUsers }: Props) {
+  const [users, setUsers] = useState<AdminUserRecord[]>(initialUsers);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "suspended">("all");
 
@@ -101,31 +105,28 @@ export function AdminUsersClient() {
           <Filter className="h-3.5 w-3.5 text-[#a4a097] ml-2 shrink-0 hidden sm:block" />
           <button
             onClick={() => setStatusFilter("all")}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-              statusFilter === "all"
-                ? "bg-[#1a1a1a] text-white"
-                : "bg-transparent text-[#787671] hover:bg-[#f7f6f3] hover:text-[#1a1a1a]"
-            }`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${statusFilter === "all"
+              ? "bg-[#1a1a1a] text-white"
+              : "bg-transparent text-[#787671] hover:bg-[#f7f6f3] hover:text-[#1a1a1a]"
+              }`}
           >
             All ({users.length})
           </button>
           <button
             onClick={() => setStatusFilter("active")}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-              statusFilter === "active"
-                ? "bg-[#d9f3e1] text-[#0f5132] border border-[#b8e8c6]"
-                : "bg-transparent text-[#787671] hover:bg-[#f7f6f3] hover:text-[#1a1a1a]"
-            }`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${statusFilter === "active"
+              ? "bg-[#d9f3e1] text-[#0f5132] border border-[#b8e8c6]"
+              : "bg-transparent text-[#787671] hover:bg-[#f7f6f3] hover:text-[#1a1a1a]"
+              }`}
           >
             Active ({users.filter((u) => u.status === "active").length})
           </button>
           <button
             onClick={() => setStatusFilter("suspended")}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-              statusFilter === "suspended"
-                ? "bg-[#fde0ec] text-[#a02e6d] border border-[#f8b4d0]"
-                : "bg-transparent text-[#787671] hover:bg-[#f7f6f3] hover:text-[#1a1a1a]"
-            }`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${statusFilter === "suspended"
+              ? "bg-[#fde0ec] text-[#a02e6d] border border-[#f8b4d0]"
+              : "bg-transparent text-[#787671] hover:bg-[#f7f6f3] hover:text-[#1a1a1a]"
+              }`}
           >
             Suspended ({users.filter((u) => u.status === "suspended").length})
           </button>
@@ -177,11 +178,10 @@ export function AdminUsersClient() {
 
                     <td className="py-3.5 px-4">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium ${
-                          user.role === "admin"
-                            ? "bg-[#e6e0f5] text-[#391c57] border border-[#d6b6f6]"
-                            : "bg-[#f0eeec] text-[#37352f] border border-[#e5e3df]"
-                        }`}
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium ${user.role === "admin"
+                          ? "bg-[#e6e0f5] text-[#391c57] border border-[#d6b6f6]"
+                          : "bg-[#f0eeec] text-[#37352f] border border-[#e5e3df]"
+                          }`}
                       >
                         {user.role === "admin" && (
                           <Shield className="h-3 w-3" />
@@ -192,11 +192,10 @@ export function AdminUsersClient() {
 
                     <td className="py-3.5 px-4">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium ${
-                          user.status === "active"
-                            ? "bg-[#d9f3e1] text-[#0f5132] border border-[#b8e8c6]"
-                            : "bg-[#fde0ec] text-[#a02e6d] border border-[#f8b4d0]"
-                        }`}
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium ${user.status === "active"
+                          ? "bg-[#d9f3e1] text-[#0f5132] border border-[#b8e8c6]"
+                          : "bg-[#fde0ec] text-[#a02e6d] border border-[#f8b4d0]"
+                          }`}
                       >
                         {user.status === "active" ? (
                           <CheckCircle2 className="h-3 w-3" />
@@ -218,11 +217,10 @@ export function AdminUsersClient() {
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => handleToggleStatus(user.id, user.status === "active" ? "active" : "suspended")}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                          user.status === "active"
-                            ? "bg-[#fde0ec]/50 text-[#a02e6d] border border-[#f8b4d0] hover:bg-[#fde0ec]"
-                            : "bg-[#d9f3e1]/50 text-[#0f5132] border border-[#b8e8c6] hover:bg-[#d9f3e1]"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${user.status === "active"
+                          ? "bg-[#fde0ec]/50 text-[#a02e6d] border border-[#f8b4d0] hover:bg-[#fde0ec]"
+                          : "bg-[#d9f3e1]/50 text-[#0f5132] border border-[#b8e8c6] hover:bg-[#d9f3e1]"
+                          }`}
                       >
                         {user.status === "active" ? (
                           <>

@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { initialAdminGroups } from "@/features/admin/mock-data";
+import { AdminGroupRecord } from "@/features/admin/types";
 import { formatCurrency } from "@/lib/money";
 import { Building2, Search, Users, CheckCircle2 } from "lucide-react";
 
-export function AdminGroupsClient() {
-  const [groups] = useState(initialAdminGroups);
+interface Props {
+  initialGroups?: AdminGroupRecord[];
+}
+
+export function AdminGroupsClient({ initialGroups = initialAdminGroups }: Props) {
+  const [groups] = useState<AdminGroupRecord[]>(initialGroups);
   const [search, setSearch] = useState("");
 
   const filteredGroups = groups.filter((g) =>

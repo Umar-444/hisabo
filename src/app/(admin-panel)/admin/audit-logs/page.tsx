@@ -1,5 +1,6 @@
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { redirect } from "next/navigation";
+import { getAdminAuditLogsQuery } from "@/features/admin/queries";
 import { AdminAuditLogsClient } from "./audit-logs-client";
 
 export const instant = false;
@@ -10,5 +11,7 @@ export default async function AdminAuditLogsPage() {
     redirect("/admin/login");
   }
 
-  return <AdminAuditLogsClient />;
+  const logs = await getAdminAuditLogsQuery();
+
+  return <AdminAuditLogsClient initialLogs={logs} />;
 }
