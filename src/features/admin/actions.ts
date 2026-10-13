@@ -211,8 +211,9 @@ export async function getSystemSettingsAction(): Promise<{
         announcement = { ...announcement, ...(row.value as any) };
       }
     }
-  } catch (err) {
-    console.error("Error fetching system settings:", err);
+  } catch (err: any) {
+    // Graceful fallback to default system settings
+    return { flags, announcement };
   }
 
   return { flags, announcement };
