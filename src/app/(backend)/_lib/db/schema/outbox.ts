@@ -27,3 +27,10 @@ export const adminAuditLogs = pgTable("admin_audit_logs", {
   details: jsonb("details"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
+
+export const systemSettings = pgTable("system_settings", {
+  key: varchar("key", { length: 50 }).primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+

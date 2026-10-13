@@ -41,7 +41,7 @@ graph TD
 | **Epic 3** | Advanced Group Governance & Closure Lifecycles | Completed | `P1` |
 | **Epic 4** | Platform Admin Portal & Moderation Queue | Completed | `P1` |
 | **Epic 5** | Financial Search, Reporting & CSV Data Exports | Completed | `P1` |
-| **Epic 6** | Growth: Receipts S3 Storage, Recurring Expenses & Push | Planned | `P2` |
+| **Epic 6** | Growth: Receipts S3 Storage, Recurring Expenses & Push | In Progress (5 Shipped) | `P2` |
 
 ---
 
@@ -207,8 +207,8 @@ graph TD
   - Handle background push in service worker.
   - **Privacy Rule:** Never show sensitive monetary amounts or private item descriptions on public lock-screen notifications by default.
 - **Acceptance Criteria:**
-  - [ ] User can grant push permission from Settings or Notification center.
-  - [ ] Unsubscribing removes endpoint from `push_subscriptions` table.
+  - [x] User can grant push permission from Settings or Notification center.
+  - [x] Unsubscribing removes endpoint from `push_subscriptions` table.
 
 ---
 
@@ -287,8 +287,8 @@ graph TD
   - Two-step confirmation dialog with password re-entry.
   - Original owner transitions to `admin` role.
 - **Acceptance Criteria:**
-  - [ ] Database transaction updates both membership roles atomically.
-  - [ ] Notification sent to the designated new owner.
+  - [x] Database transaction updates both membership roles atomically.
+  - [x] Notification sent to the designated new owner.
 
 ---
 
@@ -495,8 +495,8 @@ graph TD
   - When flatmate taps "Settle Up", display payee's payment details with quick "Copy IBAN" or "Open STC Pay" action.
   - Prefill recorded settlement form once transfer is initiated.
 - **Acceptance Criteria:**
-  - [ ] Mask sensitive bank account numbers appropriately.
-  - [ ] Clear disclaimer: "Hisabo records the transfer. Please send funds via your banking app."
+  - [x] Mask sensitive bank account numbers appropriately.
+  - [x] Clear disclaimer: "Hisabo records the transfer. Please send funds via your banking app."
 
 ---
 
@@ -511,8 +511,8 @@ graph TD
   - Service worker caching for static assets and offline navigation shell.
   - Discreet install banner on mobile browsers.
 - **Acceptance Criteria:**
-  - [ ] App installs smoothly on Android / iOS and launches in full-screen standalone mode.
-  - [ ] Offline indicator alerts user when network connectivity drops.
+  - [x] App installs smoothly on Android / iOS and launches in full-screen standalone mode.
+  - [x] Offline indicator alerts user when network connectivity drops.
 
 ---
 
@@ -525,8 +525,8 @@ graph TD
   - Dynamic flags: `registrations_enabled`, `receipt_uploads_enabled`, `exports_enabled`.
   - Global system announcement banner for scheduled maintenance or feature rollouts.
 - **Acceptance Criteria:**
-  - [ ] Disabling registration prevents new user signups with a clean maintenance message.
-  - [ ] Active sessions continue unaffected during registration freeze.
+  - [x] Disabling registration prevents new user signups with a clean maintenance message.
+  - [x] Active sessions continue unaffected during registration freeze.
 
 ---
 

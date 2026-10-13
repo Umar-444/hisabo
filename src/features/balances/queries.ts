@@ -8,6 +8,7 @@ export interface PeerBalanceItem {
   peerId: string;
   peerName: string;
   peerUsername: string;
+  paymentHandle?: string | null;
   groupId: string;
   groupName: string;
   currency: string;
@@ -90,17 +91,19 @@ export async function getAggregatedBalancesQuery(userId: string): Promise<Aggreg
       userId: users.id,
       name: users.name,
       username: users.username,
+      paymentHandle: users.paymentHandle,
     })
     .from(groupMembers)
     .innerJoin(users, eq(groupMembers.userId, users.id))
     .where(and(sql`${groupMembers.groupId} IN ${groupIds}`, eq(groupMembers.status, "active")));
 
-  const membersByGroup: Record<string, Record<string, { name: string; username: string }>> = {};
+  const membersByGroup: Record<string, Record<string, { name: string; username: string; paymentHandle: string | null }>> = {};
   for (const m of allMembers) {
     if (!membersByGroup[m.groupId]) membersByGroup[m.groupId] = {};
     membersByGroup[m.groupId][m.userId] = {
       name: m.name ?? "Member",
       username: m.username ?? "user",
+      paymentHandle: m.paymentHandle ?? null,
     };
   }
 
@@ -229,6 +232,7 @@ export async function getAggregatedBalancesQuery(userId: string): Promise<Aggreg
         peerId,
         peerName: peerInfo.name,
         peerUsername: peerInfo.username,
+        paymentHandle: peerInfo.paymentHandle ?? null,
         groupId: grpId,
         groupName: groupInfo.groupName,
         currency: cur,

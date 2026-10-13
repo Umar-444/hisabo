@@ -1,12 +1,13 @@
 "use server";
 
 import { db } from "@/app/(backend)/_lib/db";
-import { groups, groupMembers, groupInvitations, users, outboxEvents } from "@/app/(backend)/_lib/db/schema";
+import { groups, groupMembers, groupInvitations, users, outboxEvents, notifications } from "@/app/(backend)/_lib/db/schema";
 import { getUserSession } from "@/lib/auth/user-session";
 import { createGroupSchema, inviteMemberSchema } from "./schema";
 import { revalidatePath } from "next/cache";
 import { eq, or, and, sql } from "drizzle-orm";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { getClientIp, checkRateLimit, RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
 import { getMemberNetPositionInGroup } from "@/features/balances";
 import { fromMinorUnits } from "@/lib/money";
@@ -615,5 +616,137 @@ export async function unarchiveGroupAction(groupId: string) {
     return { success: false, error: err.message || "Failed to reactivate group." };
   }
 }
+
+export async function transferGroupOwnershipAction({
+  groupId,
+  newOwnerId,
+  password,
+}: {
+  groupId: string;
+  newOwnerId: string;
+  password: string;
+}) {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Authentication required" };
+  }
+
+  if (!password || !password.trim()) {
+    return { success: false, error: "Password confirmation is required to transfer group ownership." };
+  }
+
+  try {
+    // 1. Fetch group & verify caller is owner
+    const [groupRecord] = await db
+      .select()
+      .from(groups)
+      .where(eq(groups.id, groupId))
+      .limit(1);
+
+    if (!groupRecord) {
+      return { success: false, error: "Group not found." };
+    }
+
+    if (groupRecord.ownerId !== session.id) {
+      return { success: false, error: "Only the current group owner can transfer ownership." };
+    }
+
+    if (newOwnerId === session.id) {
+      return { success: false, error: "You are already the primary owner of this group." };
+    }
+
+    // 2. Verify caller's password
+    const [callerUser] = await db
+      .select({ passwordHash: users.passwordHash })
+      .from(users)
+      .where(eq(users.id, session.id))
+      .limit(1);
+
+    if (!callerUser || !callerUser.passwordHash) {
+      return { success: false, error: "Unable to verify credentials." };
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, callerUser.passwordHash);
+    if (!isPasswordValid) {
+      return { success: false, error: "Incorrect password. Ownership transfer rejected." };
+    }
+
+    // 3. Verify target newOwner is an active member
+    const [targetMembership] = await db
+      .select()
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, groupId),
+          eq(groupMembers.userId, newOwnerId),
+          eq(groupMembers.status, "active")
+        )
+      )
+      .limit(1);
+
+    if (!targetMembership) {
+      return { success: false, error: "Designated member is not an active participant in this group." };
+    }
+
+    // 4. Atomically transfer ownership
+    await db.transaction(async (tx) => {
+      // Update group primary owner
+      await tx
+        .update(groups)
+        .set({ ownerId: newOwnerId, updatedAt: new Date() })
+        .where(eq(groups.id, groupId));
+
+      // Promote new owner in group_members
+      await tx
+        .update(groupMembers)
+        .set({ role: "owner" })
+        .where(eq(groupMembers.id, targetMembership.id));
+
+      // Demote previous owner to admin
+      await tx
+        .update(groupMembers)
+        .set({ role: "admin" })
+        .where(
+          and(
+            eq(groupMembers.groupId, groupId),
+            eq(groupMembers.userId, session.id)
+          )
+        );
+
+      // Record outbox event
+      await tx.insert(outboxEvents).values({
+        eventType: "group.ownership_transferred",
+        payload: {
+          groupId,
+          previousOwnerId: session.id,
+          newOwnerId,
+          groupName: groupRecord.name,
+        },
+      });
+
+      // Send in-app notification to new owner
+      await tx.insert(notifications).values({
+        userId: newOwnerId,
+        type: "group_role_changed",
+        title: `Ownership Transferred: ${groupRecord.name}`,
+        message: `${session.name || "The previous owner"} has designated you as the primary Owner of ${groupRecord.name}.`,
+        link: `/groups/${groupId}`,
+      });
+    });
+
+    revalidatePath("/groups");
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      message: "Group ownership transferred successfully. You are now an Admin of this group.",
+    };
+  } catch (err: any) {
+    console.error("Transfer ownership error:", err);
+    return { success: false, error: err.message || "Failed to transfer group ownership." };
+  }
+}
+
 
 

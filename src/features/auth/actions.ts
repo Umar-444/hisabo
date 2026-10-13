@@ -149,6 +149,16 @@ export async function registerAction(
     };
   }
 
+  // Feature Flag Protection (TASK-30)
+  const { getSystemSettingsAction } = await import("@/features/admin/actions");
+  const { flags } = await getSystemSettingsAction();
+  if (!flags.registrationsEnabled) {
+    return {
+      success: false,
+      error: "New user registrations are currently paused for system maintenance. Please try again later.",
+    };
+  }
+
   try {
     // 1. Check if email or username already taken
     const [existing] = await db

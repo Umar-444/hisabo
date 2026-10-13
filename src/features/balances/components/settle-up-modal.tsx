@@ -2,13 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { recordSettlementAction } from "@/features/settlements/actions";
-import { HandCoins, X, AlertCircle } from "lucide-react";
+import { HandCoins, X, AlertCircle, Copy, Check, ExternalLink, QrCode, Smartphone, CreditCard } from "lucide-react";
 import { ui } from "@/lib/ui";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Props {
   peerId: string;
   peerName: string;
+  peerPaymentHandle?: string | null;
   groupId: string;
   suggestedAmount: number;
   currency: string;
@@ -17,6 +19,7 @@ interface Props {
 export function SettleUpModalClient({
   peerId,
   peerName,
+  peerPaymentHandle,
   groupId,
   suggestedAmount,
   currency,
@@ -28,6 +31,31 @@ export function SettleUpModalClient({
   const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyHandle = async () => {
+    if (!peerPaymentHandle) return;
+    try {
+      await navigator.clipboard.writeText(peerPaymentHandle);
+      setCopied(true);
+      toast.success(`Copied "${peerPaymentHandle}" to clipboard!`);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      toast.error("Failed to copy payment handle.");
+    }
+  };
+
+  const isStcPay = peerPaymentHandle && (
+    peerPaymentHandle.toLowerCase().includes("stc") ||
+    peerPaymentHandle.startsWith("05") ||
+    peerPaymentHandle.startsWith("+9665") ||
+    peerPaymentHandle.startsWith("9665")
+  );
+
+  const isIban = peerPaymentHandle && (
+    peerPaymentHandle.toUpperCase().startsWith("SA") ||
+    peerPaymentHandle.length >= 15
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +116,71 @@ export function SettleUpModalClient({
                 <h3 className="text-base font-bold text-[#0F172A]">Settle with {peerName}</h3>
                 <p className="text-xs text-slate-500">Record an off-platform payment</p>
               </div>
+            </div>
+
+            {/* Peer Payment Details Card (TASK-28) */}
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {isStcPay ? (
+                    <Smartphone className="h-3.5 w-3.5 text-purple-600" />
+                  ) : (
+                    <CreditCard className="h-3.5 w-3.5 text-[#185CFF]" />
+                  )}
+                  <span>Payee Payment Info</span>
+                </div>
+                {peerPaymentHandle && (
+                  <span className="rounded-md bg-white border border-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                    {isStcPay ? "STC Pay / Mobile" : isIban ? "Bank IBAN" : "Payment Handle"}
+                  </span>
+                )}
+              </div>
+
+              {peerPaymentHandle ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between rounded-xl bg-white border border-slate-200/90 px-3 py-2 shadow-2xs">
+                    <span className="font-mono text-xs font-bold text-[#0F172A] tracking-wider select-all break-all">
+                      {peerPaymentHandle}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyHandle}
+                      className="ml-2 inline-flex items-center gap-1 shrink-0 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 text-[11px] font-bold transition-all cursor-pointer"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          <span className="text-emerald-700">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5 text-slate-500" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {isStcPay && (
+                    <a
+                      href={`tel:${peerPaymentHandle.replace(/[^0-9+]/g, "")}`}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#185CFF] hover:underline"
+                    >
+                      <Smartphone className="h-3 w-3" />
+                      <span>Open in Phone / STC Pay</span>
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  )}
+
+                  <p className="text-[10px] text-slate-500 leading-tight">
+                    Transfer the funds using your banking app, then record this settlement below so {peerName} can confirm receipt.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-500 italic">
+                  {peerName} hasn't added a payment handle yet. You can transfer via cash or ask them to add their IBAN in Settings.
+                </p>
+              )}
             </div>
 
             {errorMsg && (

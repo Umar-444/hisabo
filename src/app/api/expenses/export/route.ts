@@ -5,11 +5,19 @@ import { expenses, users, groups } from "@/app/(backend)/_lib/db/schema";
 import { desc, inArray, eq } from "drizzle-orm";
 import { fromMinorUnits } from "@/lib/money";
 import { NextResponse } from "next/server";
+import { getSystemSettingsAction } from "@/features/admin/actions";
 
 export async function GET() {
   const session = await getUserSession();
   if (!session) {
     return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  const { flags } = await getSystemSettingsAction();
+  if (!flags.exportEnabled) {
+    return new NextResponse("Exports temporarily disabled by platform administration.", {
+      status: 403,
+    });
   }
 
   const userGroups = await getUserGroupsQuery(session.id);

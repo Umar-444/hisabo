@@ -281,7 +281,7 @@ export default async function GroupDetailPage({
         )}
       </div>
 
-      {/* Group Governance & Closure Controls (TASK-13) */}
+      {/* Group Governance & Closure Controls (TASK-13, TASK-15) */}
       <GroupGovernanceCard
         groupId={group.id}
         groupName={group.name}
@@ -289,6 +289,13 @@ export default async function GroupDetailPage({
         status={(group as any).status || "active"}
         userNetBalanceMinor={group.userNetBalanceMinor.toString()}
         currency={group.defaultCurrency}
+        members={group.members.map((m) => ({
+          id: m.userId,
+          name: m.name,
+          username: m.username,
+          role: m.role,
+        }))}
+        currentUserId={session.id}
       />
 
       {/* Group Activity & Audit Log Feed (TASK-14) */}
