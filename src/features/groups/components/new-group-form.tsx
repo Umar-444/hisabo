@@ -72,28 +72,28 @@ export function NewGroupFormClient({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 pt-2">
+    <form onSubmit={handleSubmit} className="space-y-4 pt-1">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Link
           href="/groups"
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#0F172A] hover:bg-slate-50 transition-colors shadow-2xs"
+          className="flex h-9 w-9 items-center justify-center rounded-md bg-white border border-[#c8c4be] text-[#37352f] hover:text-[#0a1530] hover:bg-[#f6f5f4] transition-colors shadow-2xs"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-4 w-4" />
         </Link>
-        <h1 className="text-xl font-black text-[#0F172A] tracking-tight">Create Group</h1>
-        <div className="w-10" />
+        <h1 className="text-lg font-bold text-[#0a1530] tracking-tight">Create Group</h1>
+        <div className="w-9" />
       </div>
 
       {errorMsg && (
-        <div className="flex items-center gap-2.5 rounded-[14px] bg-red-50 p-3.5 text-xs font-bold text-red-700 border border-red-200">
+        <div className="flex items-center gap-2.5 rounded-lg bg-[#fde0ec] p-3 text-xs font-semibold text-[#e03131] border border-[#f5b8d0]">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      {/* Group Card Details */}
-      <div className="rounded-[20px] border border-slate-200 bg-white p-6 space-y-4 shadow-xs">
+      {/* Group Card Details (Notion Sharp Canvas Card) */}
+      <div className="rounded-xl border border-[#e5e3df] bg-white p-5 space-y-3.5 shadow-2xs">
         <div>
           <label className={ui.label}>Group Name</label>
           <input
@@ -117,7 +117,7 @@ export function NewGroupFormClient({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className={ui.label}>Default Currency</label>
             <select
@@ -153,7 +153,7 @@ export function NewGroupFormClient({
       <button
         type="submit"
         disabled={isPending || !name.trim()}
-        className="w-full h-12 rounded-[16px] bg-[#185CFF] text-white hover:bg-[#1249D6] font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#185CFF]/20 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+        className="w-full h-11 rounded-lg bg-[#185CFF] text-white hover:bg-[#1249D6] font-semibold text-sm flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
       >
         {isPending ? "Creating Group..." : "Create Group · Launch Ledger"}
       </button>

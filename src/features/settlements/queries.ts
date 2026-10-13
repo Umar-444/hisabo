@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/app/(backend)/_lib/db";
 import { settlements, groups, users } from "@/app/(backend)/_lib/db/schema";
 import { eq, or, and, desc } from "drizzle-orm";
+import { isUuid } from "@/lib/utils";
 
 export interface PendingSettlementItem {
   id: string;
@@ -21,6 +22,9 @@ export interface PendingSettlementItem {
 }
 
 export async function getUserSettlementsQuery(userId: string) {
+  if (!isUuid(userId)) {
+    return [];
+  }
   const rows = await db
     .select({
       id: settlements.id,
@@ -63,6 +67,14 @@ export async function getUserSettlementsQuery(userId: string) {
 }
 
 export async function getPendingActionsQuery(userId: string) {
+  if (!isUuid(userId)) {
+    return {
+      pendingToConfirm: [],
+      activeDisputes: [],
+      totalCount: 0,
+    };
+  }
+
   // 1. Pending settlements where this user is the payee (needs to confirm receipt)
   const pendingRows = await db
     .select({

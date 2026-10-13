@@ -16,6 +16,7 @@ export interface GroupDetail {
   description: string | null;
   ownerId: string;
   defaultCurrency: string;
+  status: string;
   createdAt: Date;
   updatedAt: Date;
   members: GroupMemberItem[];

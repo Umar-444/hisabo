@@ -62,7 +62,7 @@ export default async function BalancesPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5 pb-24">
+    <div className="w-full space-y-5 pb-24">
       {/* Header */}
       <div className="flex items-center justify-between pt-2">
         <div className="flex items-center gap-3">

@@ -1,10 +1,14 @@
 import "server-only";
 import { db } from "@/app/(backend)/_lib/db";
-import { groups, groupMembers, groupInvitations, users, expenses, expenseSplits, settlements } from "@/app/(backend)/_lib/db/schema";
+import { groups, groupMembers, groupInvitations, users, expenses, expenseSplits, settlements, outboxEvents } from "@/app/(backend)/_lib/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { isUuid } from "@/lib/utils";
 import { GroupDetail, GroupMemberItem } from "./types";
 
 export async function getUserGroupsQuery(userId: string) {
+  if (!isUuid(userId)) {
+    return [];
+  }
   const memberRows = await db
     .select({
       id: groups.id,
@@ -43,6 +47,10 @@ export async function getUserGroupsQuery(userId: string) {
 }
 
 export async function getGroupDetailQuery(groupId: string, userId: string): Promise<GroupDetail | null> {
+  if (!isUuid(groupId) || !isUuid(userId)) {
+    return null;
+  }
+
   // Check user is a member of the group
   const [membership] = await db
     .select()
@@ -158,6 +166,7 @@ export async function getGroupDetailQuery(groupId: string, userId: string): Prom
     description: groupRow.description,
     ownerId: groupRow.ownerId,
     defaultCurrency: groupRow.defaultCurrency,
+    status: groupRow.status || "active",
     createdAt: groupRow.createdAt,
     updatedAt: groupRow.updatedAt,
     members,
@@ -247,6 +256,10 @@ export async function getGroupInvitePreviewQuery(token: string) {
 }
 
 export async function getGroupInvitesListQuery(groupId: string, userId: string) {
+  if (!isUuid(groupId) || !isUuid(userId)) {
+    return [];
+  }
+
   // Check user is active member
   const [membership] = await db
     .select()
@@ -289,3 +302,34 @@ export async function getGroupInvitesListQuery(groupId: string, userId: string) 
 
   return results;
 }
+
+export interface GroupActivityItem {
+  id: string;
+  eventType: string;
+  createdAt: string;
+  payload: any;
+}
+
+export async function getGroupActivityLogQuery(groupId: string): Promise<GroupActivityItem[]> {
+  if (!isUuid(groupId)) return [];
+
+  const events = await db
+    .select({
+      id: outboxEvents.id,
+      eventType: outboxEvents.eventType,
+      payload: outboxEvents.payload,
+      createdAt: outboxEvents.createdAt,
+    })
+    .from(outboxEvents)
+    .where(sql`${outboxEvents.payload}->>'groupId' = ${groupId}`)
+    .orderBy(desc(outboxEvents.createdAt))
+    .limit(30);
+
+  return events.map((e) => ({
+    id: e.id,
+    eventType: e.eventType,
+    createdAt: e.createdAt.toISOString(),
+    payload: e.payload,
+  }));
+}
+

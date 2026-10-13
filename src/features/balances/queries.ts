@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/app/(backend)/_lib/db";
 import { groups, groupMembers, users, expenses, expenseSplits, settlements } from "@/app/(backend)/_lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
+import { isUuid } from "@/lib/utils";
 
 export interface PeerBalanceItem {
   peerId: string;
@@ -31,6 +32,25 @@ export interface AggregatedBalancesResult {
 }
 
 export async function getAggregatedBalancesQuery(userId: string): Promise<AggregatedBalancesResult> {
+  if (!isUuid(userId)) {
+    return {
+      totalCreditMinor: BigInt(0),
+      totalDebitMinor: BigInt(0),
+      netTotalMinor: BigInt(0),
+      currency: "SAR",
+      currencies: ["SAR"],
+      byCurrency: {
+        SAR: {
+          currency: "SAR",
+          totalCreditMinor: BigInt(0),
+          totalDebitMinor: BigInt(0),
+          netTotalMinor: BigInt(0),
+        },
+      },
+      peerBalances: [],
+    };
+  }
+
   // 1. Get all groups user belongs to
   const userGroupRows = await db
     .select({
@@ -255,3 +275,18 @@ export async function getAggregatedBalancesQuery(userId: string): Promise<Aggreg
     peerBalances,
   };
 }
+
+export async function getMemberNetPositionInGroup(
+  groupId: string,
+  userId: string
+): Promise<bigint> {
+  const aggregated = await getAggregatedBalancesQuery(userId);
+  let totalNetInGroup = BigInt(0);
+  for (const peer of aggregated.peerBalances) {
+    if (peer.groupId === groupId) {
+      totalNetInGroup += peer.netMinor;
+    }
+  }
+  return totalNetInGroup;
+}
+
