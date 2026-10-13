@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getAdminGroupsQuery } from "@/features/admin/queries";
 import { AdminGroupsClient } from "./groups-client";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function AdminGroupsPage() {
   const session = await getAdminSession();

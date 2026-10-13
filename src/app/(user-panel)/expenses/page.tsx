@@ -13,7 +13,7 @@ export const metadata = {
   title: "Expenses Feed — Hisabo",
 };
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function ExpensesPage() {
   const session = await getUserSession();

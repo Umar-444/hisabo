@@ -26,7 +26,7 @@ import {
 import { getPendingActionsQuery } from "@/features/settlements";
 import { PendingActionsCard } from "@/features/settlements/components/pending-actions-card";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const session = await getUserSession();

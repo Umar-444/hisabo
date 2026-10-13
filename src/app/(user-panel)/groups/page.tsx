@@ -5,7 +5,7 @@ import { ui } from "@/lib/ui";
 import Link from "next/link";
 import { PlusCircle, Building2, Users, ArrowRight, Sparkles } from "lucide-react";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function GroupsPage() {
   const session = await getUserSession();

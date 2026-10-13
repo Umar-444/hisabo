@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getAdminUsersQuery } from "@/features/admin/queries";
 import { AdminUsersClient } from "./users-client";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
   const session = await getAdminSession();

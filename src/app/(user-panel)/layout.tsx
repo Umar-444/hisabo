@@ -6,7 +6,7 @@ import { DesktopUserShell } from "@/components/layout/desktop-user-shell";
 import { getSystemSettingsAction, SystemAnnouncement } from "@/features/admin/actions";
 import { GlobalAnnouncementBanner } from "@/components/layout/global-announcement-banner";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function UserPanelLayout({
   children,

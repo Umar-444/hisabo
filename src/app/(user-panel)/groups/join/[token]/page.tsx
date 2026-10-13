@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { JoinGroupButtonClient } from "./join-button-client";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function JoinGroupPage({
   params,

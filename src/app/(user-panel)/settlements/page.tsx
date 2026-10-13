@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { SettlementActionButtonsClient } from "@/features/settlements/components/settlement-actions-client";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function SettlementsPage() {
   const session = await getUserSession();

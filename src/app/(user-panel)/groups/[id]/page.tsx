@@ -24,7 +24,7 @@ import { GroupInviteModalClient } from "@/features/groups/components/group-invit
 import { GroupGovernanceCard } from "@/features/groups/components/group-governance-card";
 import { GroupActivityList } from "@/features/groups/components/group-activity-list";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   food: "🍽️",

@@ -9,7 +9,7 @@ export const metadata = {
   title: "Account & Preferences — Hisabo",
 };
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const session = await getUserSession();

@@ -30,7 +30,7 @@ import {
   getAdminAuditLogsQuery,
 } from "@/features/admin/queries";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   const session = await getAdminSession();

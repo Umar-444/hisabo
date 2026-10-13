@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSystemSettingsAction } from "@/features/admin/actions";
 import { AdminSettingsClient } from "./settings-client";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   const session = await getAdminSession();

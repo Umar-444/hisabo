@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getAdminAuditLogsQuery } from "@/features/admin/queries";
 import { AdminAuditLogsClient } from "./audit-logs-client";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function AdminAuditLogsPage() {
   const session = await getAdminSession();

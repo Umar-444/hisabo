@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { DisputeButtonClient } from "@/features/expenses/components/dispute-button";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   food: "🍽️",

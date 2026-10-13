@@ -10,7 +10,7 @@ import {
 } from "@/features/balances/components/balances-view-client";
 import { SerializedCurrencySummary } from "@/features/balances/components/dashboard-balance-hero";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function BalancesPage() {
   const session = await getUserSession();

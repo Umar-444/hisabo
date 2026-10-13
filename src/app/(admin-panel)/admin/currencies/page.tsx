@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getAdminCurrenciesQuery } from "@/features/admin/queries";
 import { CurrencyManagerClient } from "./currency-manager-client";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function AdminCurrenciesPage() {
   const session = await getAdminSession();

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getAdminOutboxEventsQuery } from "@/features/admin/queries";
 import { AdminOutboxClient } from "./outbox-client";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function AdminOutboxPage() {
   const session = await getAdminSession();

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { NewGroupFormClient } from "@/features/groups/components/new-group-form";
 import { getLiveCurrenciesQuery } from "@/features/admin/queries";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function NewGroupPage() {
   const session = await getUserSession();

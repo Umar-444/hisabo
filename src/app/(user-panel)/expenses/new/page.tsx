@@ -4,7 +4,7 @@ import { getUserGroupsQuery } from "@/features/groups";
 import { getGroupDetailQuery } from "@/features/groups";
 import { NewExpenseClientForm } from "@/features/expenses/components/new-expense-form";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function NewExpensePage({
   searchParams,
