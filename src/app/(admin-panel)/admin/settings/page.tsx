@@ -14,7 +14,7 @@ export default async function AdminSettingsPage() {
   const { flags, announcement } = await getSystemSettingsAction();
 
   return (
-    <div className="p-6 sm:p-8 space-y-6">
+    <div className="space-y-6 max-w-4xl">
       <AdminSettingsClient
         initialFlags={flags}
         initialAnnouncement={announcement}

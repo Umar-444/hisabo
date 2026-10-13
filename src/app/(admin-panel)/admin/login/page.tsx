@@ -3,7 +3,6 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { adminLoginAction } from "@/features/admin/actions";
-import { ui } from "@/lib/ui";
 import { ShieldCheck, Lock, Mail, Eye, EyeOff, KeyRound, ArrowLeft } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -13,44 +12,40 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-[#0F172A] p-4 sm:p-6 text-slate-100 relative overflow-hidden">
-      {/* Background glow effects */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#185CFF]/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen flex flex-col justify-center items-center bg-[#f7f6f3] p-4 sm:p-6 text-[#1a1a1a] relative">
       {/* Top back to public site link */}
       <div className="w-full max-w-md mb-6 flex justify-between items-center text-xs">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-[#787671] hover:text-[#1a1a1a] transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Hisabo
         </Link>
-        <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-slate-400 border border-slate-700/80">
+        <span className="rounded-md bg-[#ede9e4] px-2 py-0.5 text-[11px] font-medium text-[#5d5b54] border border-[#e5e3df]">
           Internal Console
         </span>
       </div>
 
-      <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-xl relative z-10">
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#185CFF] text-white shadow-lg shadow-[#185CFF]/30 mb-4">
-            <ShieldCheck className="h-7 w-7" />
+      <div className="w-full max-w-md rounded-2xl border border-[#e5e3df] bg-white p-7 sm:p-8 shadow-sm">
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#185CFF] text-white shadow-xs mb-3">
+            <ShieldCheck className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight">
-            Hisabo Admin Portal
+          <h1 className="text-xl sm:text-2xl font-semibold text-[#1a1a1a] tracking-tight">
+            Hisabo Admin Console
           </h1>
-          <p className="text-xs text-slate-400 mt-1.5">
+          <p className="text-xs sm:text-sm text-[#787671] mt-1">
             Secured access for moderators, support, and ledger audits
           </p>
         </div>
 
-        {/* Quick Demo Credentials Box */}
-        <div className="rounded-2xl border border-blue-500/30 bg-blue-950/40 p-4 mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+        {/* Quick Demo Credentials Box (Notion Pastel Callout) */}
+        <div className="rounded-xl border border-[#b8dcfa] bg-[#dcecfa]/30 p-3.5 mb-5">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#005bab] flex items-center gap-1.5">
               <KeyRound className="h-3.5 w-3.5" />
-              Admin Credentials
+              Demo Credentials
             </span>
             <button
               type="button"
@@ -58,38 +53,38 @@ export default function AdminLoginPage() {
                 setEmail("admin@hisabo.com");
                 setPassword("Admin@Hisabo2026!");
               }}
-              className="text-xs text-blue-300 hover:text-white font-medium underline underline-offset-2 cursor-pointer"
+              className="text-xs text-[#185CFF] hover:underline font-medium cursor-pointer"
             >
               Auto Fill
             </button>
           </div>
-          <div className="space-y-1 text-xs font-mono text-slate-300">
+          <div className="space-y-0.5 text-xs font-mono text-[#37352f]">
             <div className="flex justify-between">
-              <span className="text-slate-400">Username:</span>
-              <span className="font-semibold text-white">admin@hisabo.com</span>
+              <span className="text-[#787671]">Username:</span>
+              <span className="font-semibold text-[#1a1a1a]">admin@hisabo.com</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Password:</span>
-              <span className="font-semibold text-white">Admin@Hisabo2026!</span>
+              <span className="text-[#787671]">Password:</span>
+              <span className="font-semibold text-[#1a1a1a]">Admin@Hisabo2026!</span>
             </div>
           </div>
         </div>
 
         {/* Error notification */}
         {state?.error && (
-          <div className="rounded-xl border border-red-500/30 bg-red-950/40 p-3.5 mb-6 text-xs text-red-300 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-400 shrink-0" />
+          <div className="rounded-lg border border-[#f8b4d0] bg-[#fde0ec] p-3 mb-5 text-xs text-[#a02e6d] font-medium flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#e03131] shrink-0" />
             {state.error}
           </div>
         )}
 
-        <form action={formAction} className="space-y-5">
+        <form action={formAction} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold tracking-wide text-slate-300 uppercase mb-2">
+            <label className="block text-[11px] font-semibold tracking-wider text-[#787671] uppercase mb-1.5">
               Admin Email / Username
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-[#a4a097]" />
               <input
                 type="email"
                 name="email"
@@ -97,17 +92,17 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@hisabo.com"
-                className="w-full rounded-xl border border-slate-700 bg-slate-800/80 pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#185CFF] focus:outline-none focus:ring-2 focus:ring-[#185CFF]/30 transition-colors"
+                className="w-full rounded-lg border border-[#e5e3df] bg-[#fafaf9] pl-10 pr-4 py-2.5 text-xs sm:text-sm text-[#1a1a1a] placeholder:text-[#a4a097] focus:border-[#185CFF] focus:bg-white focus:outline-none transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold tracking-wide text-slate-300 uppercase mb-2">
+            <label className="block text-[11px] font-semibold tracking-wider text-[#787671] uppercase mb-1.5">
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+              <Lock className="absolute left-3.5 top-3 h-4 w-4 text-[#a4a097]" />
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -115,12 +110,12 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full rounded-xl border border-slate-700 bg-slate-800/80 pl-10 pr-11 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#185CFF] focus:outline-none focus:ring-2 focus:ring-[#185CFF]/30 transition-colors"
+                className="w-full rounded-lg border border-[#e5e3df] bg-[#fafaf9] pl-10 pr-11 py-2.5 text-xs sm:text-sm text-[#1a1a1a] placeholder:text-[#a4a097] focus:border-[#185CFF] focus:bg-white focus:outline-none transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-3 text-slate-400 hover:text-white transition-colors"
+                className="absolute right-3.5 top-3 text-[#787671] hover:text-[#1a1a1a] transition-colors cursor-pointer"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -130,20 +125,17 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isPending}
-            className={ui.btn({
-              variant: "primary",
-              size: "md",
-              className: "w-full mt-2 font-bold",
-            })}
+            className="w-full h-10 rounded-lg bg-[#185CFF] text-white font-medium text-xs sm:text-sm hover:bg-blue-600 transition-all cursor-pointer shadow-xs disabled:opacity-50 mt-1"
           >
             {isPending ? "Authenticating..." : "Sign In to Admin Console"}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
-          Hisabo Operational Guard & Ledgers · Zero-Loss Integer Math
+        <div className="mt-6 pt-5 border-t border-[#ede9e4] text-center text-[11px] text-[#787671]">
+          Hisabo Operational Guard &amp; Ledgers · Zero-Loss Integer Math
         </div>
       </div>
     </div>
   );
 }
+

@@ -21,13 +21,12 @@ export function GlobalAnnouncementBanner({ announcement }: Props) {
   return (
     <div
       role="banner"
-      className={`relative z-40 px-4 py-2 text-xs font-semibold flex items-center justify-between border-b transition-all ${
-        isAlert
+      className={`relative z-40 px-4 py-2 text-xs font-semibold flex items-center justify-between border-b transition-all ${isAlert
           ? "bg-rose-500 text-white border-rose-600 shadow-xs"
           : isWarning
-          ? "bg-amber-500 text-white border-amber-600 shadow-xs"
-          : "bg-[#185CFF] text-white border-[#1249D6] shadow-xs"
-      }`}
+            ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+            : "bg-[#185CFF] text-white border-[#1249D6] shadow-xs"
+        }`}
     >
       <div className="flex items-center gap-2 max-w-7xl mx-auto flex-1 justify-center pr-6">
         {isAlert ? (
