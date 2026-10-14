@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 export default async function SettlementsPage() {
   const session = await getUserSession();
   if (!session) {
-    redirect("/login");
+    return null;
   }
 
   const settlementsList = await getUserSettlementsQuery(session.id);

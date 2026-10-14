@@ -34,7 +34,7 @@ export default async function ExpenseDetailPage({
 }) {
   const session = await getUserSession();
   if (!session) {
-    redirect("/login");
+    return null;
   }
 
   const { id } = await params;

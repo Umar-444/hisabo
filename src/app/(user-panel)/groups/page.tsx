@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function GroupsPage() {
   const session = await getUserSession();
   if (!session) {
-    redirect("/login");
+    return null;
   }
 
   const userGroups = await getUserGroupsQuery(session.id);

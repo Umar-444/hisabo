@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function NewGroupPage() {
   const session = await getUserSession();
   if (!session) {
-    redirect("/login");
+    return null;
   }
 
   let liveCurrencies: Array<{

@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function BalancesPage() {
   const session = await getUserSession();
   if (!session) {
-    redirect("/login");
+    return null;
   }
 
   const balances = await getAggregatedBalancesQuery(session.id);

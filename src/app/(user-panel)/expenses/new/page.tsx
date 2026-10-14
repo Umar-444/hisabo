@@ -13,7 +13,7 @@ export default async function NewExpensePage({
 }) {
   const session = await getUserSession();
   if (!session) {
-    redirect("/login");
+    return null;
   }
 
   const { groupId: queryGroupId } = await searchParams;

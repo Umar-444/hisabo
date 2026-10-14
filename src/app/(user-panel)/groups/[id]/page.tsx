@@ -43,7 +43,7 @@ export default async function GroupDetailPage({
 }) {
   const session = await getUserSession();
   if (!session) {
-    redirect("/login");
+    return null;
   }
 
   const { id } = await params;

@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { connection } from "next/server";
 import crypto from "crypto";
 
 export interface AdminSession {
@@ -80,7 +79,6 @@ export async function requireAdminSession(): Promise<AdminSession> {
 }
 
 export async function getAdminSession(): Promise<AdminSession | null> {
-  await connection();
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
