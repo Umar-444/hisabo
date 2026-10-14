@@ -5,7 +5,7 @@ import * as schema from "./schema";
 
 const connectionString =
   process.env.DATABASE_URL ||
-  "postgresql://user:password@ep-young-brook-45994299-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require";
+  "postgresql://neondb_owner:npg_WHpvsM3ajn0e@ep-small-waterfall-b4kfrb0r-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
 
 // Cache sql client across hot-reloads in development
 const globalForDb = globalThis as unknown as {
