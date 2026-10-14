@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.20.10",
+    "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/turbopack": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
