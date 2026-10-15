@@ -25,6 +25,7 @@ import {
 } from "@/features/balances/components/dashboard-balance-hero";
 import { getPendingActionsQuery } from "@/features/settlements";
 import { PendingActionsCard } from "@/features/settlements/components/pending-actions-card";
+import { CategoryTile } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,7 @@ export default async function DashboardPage() {
   }
 
   // Fetch groups
-  let userGroups: { id: string; name: string; defaultCurrency: string; role: string }[] = [];
+  let userGroups: { id: string; name: string; defaultCurrency: string; role: string; joinedAt: Date | null }[] = [];
   try {
     if (isUuid(session.id)) {
       userGroups = await db
@@ -77,6 +78,7 @@ export default async function DashboardPage() {
           name: groups.name,
           defaultCurrency: groups.defaultCurrency,
           role: groupMembers.role,
+          joinedAt: groupMembers.joinedAt,
         })
         .from(groupMembers)
         .innerJoin(groups, eq(groupMembers.groupId, groups.id))
@@ -100,9 +102,10 @@ export default async function DashboardPage() {
   try {
     const userGroupIds = userGroups.map((g) => g.id);
     if (userGroupIds.length > 0) {
-      recentExpenses = await db
+      const rawRecent = await db
         .select({
           id: expenses.id,
+          groupId: expenses.groupId,
           description: expenses.description,
           amountMinor: expenses.amountMinor,
           currency: expenses.currency,
@@ -118,7 +121,18 @@ export default async function DashboardPage() {
           )
         )
         .orderBy(desc(expenses.createdAt))
-        .limit(6);
+        .limit(10);
+
+      recentExpenses = rawRecent
+        .filter((e) => {
+          const userGrp = userGroups.find((g) => g.id === e.groupId);
+          if (!userGrp) return false;
+          const isPrivileged = userGrp.role === "owner" || userGrp.role === "admin";
+          if (isPrivileged || e.paidBy === session.id) return true;
+          if (userGrp.joinedAt && e.createdAt >= userGrp.joinedAt) return true;
+          return false;
+        })
+        .slice(0, 6);
     }
   } catch (e) {
     console.error("Error loading expenses:", e);
@@ -166,7 +180,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between pt-1">
         <div>
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[#0a1530]">
-            Hi, {session.name.split(" ")[0]} 👋
+            Welcome back, {session.name.split(" ")[0]}
           </h1>
           <p className="text-xs md:text-sm text-[#787671] font-normal mt-0.5">
             {pendingActions.totalCount > 0
@@ -198,7 +212,7 @@ export default async function DashboardPage() {
       {/* Main Content Sections: Full-width responsive 2-column grid on desktop (lg:), stacked on mobile/tablet */}
       <div className="space-y-5 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-6 items-start">
         {/* Left Column (Desktop 7 cols): Balance Hero Card & SettleSmart Protection */}
-        <div className="space-y-5 lg:col-span-7">
+        <div className="space-y-3 lg:col-span-7">
           {/* 2. Signature Sharp Balance Hero Card (Multi-Currency Partitioned) */}
           <DashboardBalanceHero
             currencies={aggregatedBalances.currencies}
@@ -206,23 +220,21 @@ export default async function DashboardPage() {
             initialCurrency={aggregatedBalances.currency}
           />
 
-          {/* 3. SettleSmart Budget & Ledger Health Banner (Notion Sky Tint) */}
-          <div className="flex items-center gap-3 rounded-xl border border-[#c0dcf7] bg-[#dcecfa]/80 p-3.5 shadow-2xs">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#0075de] text-white">
-              <ShieldCheck className="h-4 w-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-[#0a3663] flex items-center gap-1.5">
-                SettleSmart Ledger Protection
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-              </div>
-              <div className="text-[11px] text-[#0a3663]/80 truncate">
-                Zero-loss integer math · Deterministic halala remainder allocation
+          {/* 3. SettleSmart Ledger Integrity Strip (Quiet Trust Banner) */}
+          <div className="flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-200/90 bg-white/70 shadow-2xs backdrop-blur-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <ShieldCheck className="h-4 w-4 text-[#185CFF] shrink-0" />
+              <div className="flex items-center gap-1.5 truncate">
+                <span className="text-xs font-semibold text-[#0F172A]">SettleSmart Ledger Protection</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] shrink-0" />
+                <span className="text-[11px] text-slate-500 font-normal hidden sm:inline truncate">
+                  · Zero-loss integer math
+                </span>
               </div>
             </div>
-            <div className="text-right shrink-0">
-              <div className="text-xs font-bold text-[#0075de]">Balanced</div>
-              <div className="text-[10px] text-[#0a3663]/70 font-semibold">0 Disputes</div>
+            <div className="flex items-center gap-2 text-right shrink-0 pl-2">
+              <span className="text-[11px] font-bold text-emerald-600">● Balanced</span>
+              <span className="text-[10px] font-medium text-slate-400">0 Disputes</span>
             </div>
           </div>
         </div>
@@ -263,17 +275,6 @@ export default async function DashboardPage() {
               <div className="space-y-0.5">
                 {recentExpenses.map((exp) => {
                   const isPayer = exp.paidBy === session.id;
-                  // Format category emoji tile
-                  const categoryEmojis: Record<string, string> = {
-                    food: "🍽️",
-                    groceries: "🛒",
-                    rent: "🏠",
-                    utilities: "⚡",
-                    transport: "🚗",
-                    entertainment: "🍿",
-                    general: "🧾",
-                  };
-                  const emoji = categoryEmojis[exp.category] || "🧾";
 
                   return (
                     <Link
@@ -283,9 +284,7 @@ export default async function DashboardPage() {
                       className={`${ui.transactionRow} hover:bg-slate-50/80 transition-colors cursor-pointer block`}
                     >
                       {/* Category Tile */}
-                      <div className={ui.categoryTile}>
-                        <span>{emoji}</span>
-                      </div>
+                      <CategoryTile category={exp.category} size="md" />
 
                       {/* Title and Meta */}
                       <div className="flex-1 min-w-0">

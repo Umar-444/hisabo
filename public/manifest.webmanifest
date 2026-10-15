@@ -1,25 +1,112 @@
 {
+  "id": "/",
   "name": "Hisabo - Shared Expenses",
   "short_name": "Hisabo",
-  "description": "Split easy. Settle smart.",
+  "description": "Split easy. Settle smart. The auditable shared expense ledger.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#F1F5F9",
+  "background_color": "#0a1530",
   "theme_color": "#185CFF",
+  "categories": ["finance", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Hisabo Financial Dashboard"
+    },
+    {
+      "src": "/screenshots/dashboard-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Hisabo Mobile Dashboard"
+    },
+    {
+      "src": "/screenshots/expenses-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Audit-Verified Expenses Feed"
+    },
+    {
+      "src": "/screenshots/balances-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Zero-Loss Balance Ledger"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Expense",
+      "short_name": "Add",
+      "description": "Quickly record a new shared expense",
+      "url": "/expenses/new",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Net Balances",
+      "short_name": "Balances",
+      "description": "View who owes whom in your groups",
+      "url": "/balances",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Settlements",
+      "short_name": "Settle",
+      "description": "Record and confirm payments",
+      "url": "/settlements",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/expenses/new",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "description",
+      "url": "url"
+    }
+  }
 }

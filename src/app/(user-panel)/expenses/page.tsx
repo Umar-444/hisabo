@@ -47,7 +47,17 @@ export default async function ExpensesPage() {
       .orderBy(desc(expenses.createdAt));
   }
 
-  const serializedExpenses: SerializedExpenseRow[] = rawExpenses.map((e) => ({
+  // Scope expenses to post-join for regular members
+  const filteredRawExpenses = rawExpenses.filter((e) => {
+    const userGrp = userGroups.find((g) => g.id === e.groupId);
+    if (!userGrp) return false;
+    const isPrivileged = userGrp.role === "owner" || userGrp.role === "admin";
+    if (isPrivileged || e.paidBy === session.id) return true;
+    if (userGrp.joinedAt && e.createdAt >= userGrp.joinedAt) return true;
+    return false;
+  });
+
+  const serializedExpenses: SerializedExpenseRow[] = filteredRawExpenses.map((e) => ({
     id: e.id,
     description: e.description,
     amountMinor: e.amountMinor.toString(),

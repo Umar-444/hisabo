@@ -5,58 +5,137 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offline — Hisabo</title>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #F1F5F9;
       color: #0F172A;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
-      padding: 1rem;
+      min-height: 100vh;
+      padding: 1.5rem;
       text-align: center;
     }
     .card {
       background: #ffffff;
       padding: 2.5rem 2rem;
-      border-radius: 1.25rem;
+      border-radius: 1.5rem;
       border: 1px solid #E2E8F0;
-      max-width: 400px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    }
+    .logo-tile {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #185CFF 0%, #0D40C9 100%);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 1.75rem;
+      box-shadow: 0 8px 16px rgba(24, 92, 255, 0.25);
+      margin-bottom: 1.25rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: #FEF3C7;
+      color: #92400E;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.025em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #F59E0B;
     }
     h1 {
-      font-size: 1.5rem;
-      margin-bottom: 0.75rem;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
       color: #0F172A;
     }
     p {
       color: #64748B;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       line-height: 1.5;
       margin-bottom: 1.5rem;
     }
-    button {
+    .retry-btn {
       background-color: #185CFF;
       color: white;
       border: none;
-      padding: 0.75rem 1.5rem;
-      font-weight: 600;
+      padding: 0.75rem 1.75rem;
+      font-weight: 700;
       border-radius: 0.75rem;
       cursor: pointer;
       font-size: 0.9rem;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 4px rgba(24, 92, 255, 0.2);
+      width: 100%;
     }
-    button:hover {
+    .retry-btn:hover {
       background-color: #1249D6;
+    }
+    .retry-btn:active {
+      transform: scale(0.98);
+    }
+    .footer-note {
+      margin-top: 1.25rem;
+      font-size: 0.75rem;
+      color: #94A3B8;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>You are currently offline</h1>
-    <p>Hisabo needs an active connection to verify financial ledgers and update group balances safely.</p>
-    <button onclick="window.location.reload()">Retry Connection</button>
+    <div class="logo-tile">H</div>
+    <div>
+      <span class="pill" id="status-pill"><span class="pill-dot"></span> Offline Shell Active</span>
+    </div>
+    <h1>Connection Paused</h1>
+    <p>Hisabo requires an active internet connection to verify ledger invariants and sync balances across roommates safely.</p>
+    <button class="retry-btn" id="retry-btn" onclick="retryConnection()">Check Connection &amp; Reload</button>
+    <div class="footer-note" id="auto-note">Auto-reconnecting as soon as signal is detected...</div>
   </div>
+
+  <script>
+    function retryConnection() {
+      var btn = document.getElementById('retry-btn');
+      btn.textContent = 'Verifying connection...';
+      btn.disabled = true;
+      setTimeout(function() {
+        window.location.reload();
+      }, 300);
+    }
+
+    // Auto-retry when browser comes back online
+    window.addEventListener('online', function() {
+      var pill = document.getElementById('status-pill');
+      var note = document.getElementById('auto-note');
+      if (pill) pill.textContent = 'Connection Restored!';
+      if (note) note.textContent = 'Reloading ledger now...';
+      setTimeout(function() {
+        window.location.reload();
+      }, 500);
+    });
+  </script>
 </body>
 </html>

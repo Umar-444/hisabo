@@ -359,7 +359,7 @@ export default async function AdminDashboardPage() {
           <div>
             <div className="text-[11px] text-[#787671]">Database Connection Pool</div>
             <div className="font-bold text-[#0a1530] mt-0.5 font-mono">
-              Neon PostgreSQL AWS us-east-2
+              AWS PostgreSQL
             </div>
           </div>
         </div>
