@@ -28,21 +28,13 @@ export interface SerializedExpenseRow {
   groupName: string;
 }
 
+import { CategoryTile } from "@/lib/categories";
+
 interface Props {
   expenses: SerializedExpenseRow[];
   currentUserId: string;
   groupsList: { id: string; name: string }[];
 }
-
-const CATEGORY_EMOJIS: Record<string, string> = {
-  food: "🍽️",
-  groceries: "🛒",
-  rent: "🏠",
-  utilities: "⚡",
-  transport: "🚗",
-  entertainment: "🍿",
-  general: "🧾",
-};
 
 export function ExpensesFeedClient({ expenses, currentUserId, groupsList }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,13 +44,13 @@ export function ExpensesFeedClient({ expenses, currentUserId, groupsList }: Prop
 
   const categories = [
     { id: "all", label: "All Categories" },
-    { id: "food", label: "Food 🍽️" },
-    { id: "groceries", label: "Groceries 🛒" },
-    { id: "rent", label: "Rent 🏠" },
-    { id: "utilities", label: "Utilities ⚡" },
-    { id: "transport", label: "Transport 🚗" },
-    { id: "entertainment", label: "Entertainment 🍿" },
-    { id: "general", label: "General 🧾" },
+    { id: "food", label: "Food & Dining" },
+    { id: "groceries", label: "Groceries" },
+    { id: "rent", label: "Rent & Housing" },
+    { id: "utilities", label: "Utilities & Bills" },
+    { id: "transport", label: "Transport" },
+    { id: "entertainment", label: "Entertainment" },
+    { id: "general", label: "General" },
   ];
 
   const filteredExpenses = useMemo(() => {
@@ -252,7 +244,6 @@ export function ExpensesFeedClient({ expenses, currentUserId, groupsList }: Prop
           <div className="space-y-0.5">
             {filteredExpenses.map((exp) => {
               const isPayer = exp.paidBy === currentUserId;
-              const emoji = CATEGORY_EMOJIS[exp.category] || "🧾";
               const majorAmount = fromMinorUnits(BigInt(exp.amountMinor));
 
               return (
@@ -262,9 +253,7 @@ export function ExpensesFeedClient({ expenses, currentUserId, groupsList }: Prop
                   className={ui.transactionRow}
                 >
                   {/* Category Tile */}
-                  <div className={ui.categoryTile}>
-                    <span>{emoji}</span>
-                  </div>
+                  <CategoryTile category={exp.category} size="md" />
 
                   {/* Description & Group Metadata */}
                   <div className="flex-1 min-w-0">

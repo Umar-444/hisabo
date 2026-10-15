@@ -23,18 +23,9 @@ import {
 import { GroupInviteModalClient } from "@/features/groups/components/group-invite-modal";
 import { GroupGovernanceCard } from "@/features/groups/components/group-governance-card";
 import { GroupActivityList } from "@/features/groups/components/group-activity-list";
+import { CategoryTile } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
-
-const CATEGORY_EMOJIS: Record<string, string> = {
-  food: "🍽️",
-  groceries: "🛒",
-  rent: "🏠",
-  utilities: "⚡",
-  transport: "🚗",
-  entertainment: "🍿",
-  general: "🧾",
-};
 
 export default async function GroupDetailPage({
   params,
@@ -247,7 +238,6 @@ export default async function GroupDetailPage({
           <div className="divide-y divide-slate-100">
             {expensesList.map((exp) => {
               const isPayer = exp.paidById === session.id;
-              const emoji = CATEGORY_EMOJIS[exp.category] || "🧾";
               const majorAmount = fromMinorUnits(exp.amountMinor);
 
               return (
@@ -256,9 +246,7 @@ export default async function GroupDetailPage({
                   href={`/expenses/${exp.id}`}
                   className={ui.transactionRow}
                 >
-                  <div className={ui.categoryTile}>
-                    <span>{emoji}</span>
-                  </div>
+                  <CategoryTile category={exp.category} size="md" />
 
                   <div className="flex-1 min-w-0">
                     <div className="text-[15px] font-semibold text-[#0F172A] truncate">

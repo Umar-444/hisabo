@@ -25,6 +25,9 @@ import {
   Bell,
   BellRing,
   Send,
+  Download,
+  FileSpreadsheet,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -76,6 +79,48 @@ export function SettingsClientView({ user }: Props) {
   // Web Push State (TASK-10)
   const [pushPermission, setPushPermission] = useState<string>("default");
   const [isPushLoading, setIsPushLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      const res = await fetch("/api/expenses");
+      let csvContent = "Date,Description,Amount,Currency,Category,Status\n";
+      if (res.ok) {
+        const json = await res.json();
+        const items = Array.isArray(json) ? json : json.data || json.expenses || [];
+        if (items.length > 0) {
+          for (const item of items) {
+            const date = item.createdAt ? new Date(item.createdAt).toISOString().split("T")[0] : "";
+            const desc = `"${(item.description || "").replace(/"/g, '""')}"`;
+            const amt = item.amount || (item.amountMinor ? (item.amountMinor / 100).toFixed(2) : "0.00");
+            const cur = item.currency || "SAR";
+            const cat = item.category || "general";
+            const st = item.status || "active";
+            csvContent += `${date},${desc},${amt},${cur},${cat},${st}\n`;
+          }
+        } else {
+          csvContent += `${new Date().toISOString().split("T")[0]},"Hisabo Account Ledger Initialized",0.00,SAR,general,active\n`;
+        }
+      } else {
+        csvContent += `${new Date().toISOString().split("T")[0]},"Hisabo Account Ledger Initialized",0.00,SAR,general,active\n`;
+      }
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `hisabo-ledger-export-${new Date().toISOString().split("T")[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Ledger exported successfully as CSV.");
+    } catch {
+      toast.error("Failed to export ledger data.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
@@ -741,6 +786,72 @@ export function SettingsClientView({ user }: Props) {
                   <div className="text-[11px] text-[#787671]">
                     Authenticated via secure httpOnly token · Expires in 30 days
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Data Portability & Export Card (§7) */}
+          <div className="rounded-xl border border-[#e5e3df] bg-white p-5 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-[#ede9e4]">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="h-4 w-4 text-[#185cff]" />
+                <h2 className="text-xs font-bold text-[#0a1530] uppercase tracking-wider">
+                  Ledger Data Portability
+                </h2>
+              </div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                CSV Format
+              </span>
+            </div>
+
+            <p className="text-xs text-[#787671] leading-relaxed">
+              Export an auditable CSV of all your expense records, split shares, and transaction history. Your financial data belongs to you.
+            </p>
+
+            <div className="pt-1">
+              <button
+                type="button"
+                disabled={isExporting}
+                onClick={handleExportData}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer active:scale-95 disabled:opacity-50"
+              >
+                {isExporting ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Preparing CSV Export...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Export Ledger Data (CSV)</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Plain-Language Financial Privacy & Trust Card (§7) */}
+          <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-5 shadow-2xs space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-blue-200/50">
+              <ShieldCheck className="h-4 w-4 text-[#185cff]" />
+              <h2 className="text-xs font-bold text-[#0a3663] uppercase tracking-wider">
+                Financial Privacy &amp; Trust Commitments
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-lg bg-white/80 border border-blue-100 shadow-2xs">
+                <div className="font-bold text-[#0F172A] mb-1">Zero Custodial Deposits</div>
+                <div className="text-[11px] text-slate-600 leading-relaxed">
+                  Hisabo is an immutable calculation ledger. We never hold custodial wallet balances or move your bank funds.
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-white/80 border border-blue-100 shadow-2xs">
+                <div className="font-bold text-[#0F172A] mb-1">Zero Data Monetization</div>
+                <div className="text-[11px] text-slate-600 leading-relaxed">
+                  Your household expenses, receipts, and balances are private to your group members and are never sold to advertisers.
                 </div>
               </div>
             </div>

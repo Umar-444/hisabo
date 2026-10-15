@@ -17,17 +17,9 @@ import { DisputeButtonClient } from "@/features/expenses/components/dispute-butt
 import { CancelExpenseButtonClient } from "@/features/expenses/components/cancel-expense-button";
 import { EditExpenseModalClient } from "@/features/expenses/components/edit-expense-modal";
 
-export const dynamic = "force-dynamic";
+import { CategoryTile } from "@/lib/categories";
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-  food: "🍽️",
-  groceries: "🛒",
-  rent: "🏠",
-  utilities: "⚡",
-  transport: "🚗",
-  entertainment: "🍿",
-  general: "🧾",
-};
+export const dynamic = "force-dynamic";
 
 export default async function ExpenseDetailPage({
   params,
@@ -46,7 +38,6 @@ export default async function ExpenseDetailPage({
     notFound();
   }
 
-  const emoji = CATEGORY_EMOJIS[expense.category] || "🧾";
   const totalMajor = fromMinorUnits(expense.amountMinor);
   const userShareMajor = expense.userShareMinor ? fromMinorUnits(expense.userShareMinor) : null;
 
@@ -81,9 +72,7 @@ export default async function ExpenseDetailPage({
 
       {/* Hero Summary Card */}
       <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-xs text-center relative overflow-hidden">
-        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-[18px] bg-[#EBF2FF] text-2xl border border-blue-100/60 shadow-xs">
-          {emoji}
-        </div>
+        <CategoryTile category={expense.category} size="lg" className="mx-auto mb-3" />
 
         <h1 className="text-xl font-black text-[#0F172A] tracking-tight">{expense.description}</h1>
 

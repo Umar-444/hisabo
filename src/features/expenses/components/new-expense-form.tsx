@@ -14,8 +14,10 @@ import {
   Building2,
   Calendar,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { EXPENSE_CATEGORIES_LIST, type ExpenseCategoryId } from "@/lib/categories";
 
 interface Member {
   userId: string;
@@ -36,16 +38,6 @@ interface Props {
   initialMembers: Member[];
 }
 
-const CATEGORIES = [
-  { id: "food", label: "Food", emoji: "🍽️" },
-  { id: "groceries", label: "Groceries", emoji: "🛒" },
-  { id: "rent", label: "Rent", emoji: "🏠" },
-  { id: "utilities", label: "Utilities", emoji: "⚡" },
-  { id: "transport", label: "Transport", emoji: "🚗" },
-  { id: "entertainment", label: "Fun", emoji: "🍿" },
-  { id: "general", label: "General", emoji: "🧾" },
-] as const;
-
 export function NewExpenseClientForm({
   currentUser,
   groups,
@@ -58,7 +50,7 @@ export function NewExpenseClientForm({
   const [groupId, setGroupId] = useState(initialGroupId);
   const [amountStr, setAmountStr] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<typeof CATEGORIES[number]["id"]>("food");
+  const [category, setCategory] = useState<ExpenseCategoryId>("food");
   const [paidBy, setPaidBy] = useState(currentUser.id);
   const [splitType, setSplitType] = useState<"equal" | "custom">("equal");
   
@@ -281,21 +273,30 @@ export function NewExpenseClientForm({
       <div className="rounded-xl border border-[#e5e3df] bg-white p-5 shadow-2xs">
         <label className={ui.label}>Category</label>
         <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5 mt-2">
-          {CATEGORIES.map((cat) => {
+          {EXPENSE_CATEGORIES_LIST.map((cat) => {
             const isSelected = category === cat.id;
+            const Icon = cat.icon;
             return (
               <button
                 type="button"
                 key={cat.id}
-                onClick={() => setCategory(cat.id)}
-                className={`flex flex-col items-center justify-center p-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                onClick={() => setCategory(cat.id as ExpenseCategoryId)}
+                className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? "border-[#185CFF] bg-[#185cff]/10 text-[#185CFF] shadow-2xs"
-                    : "border-[#e5e3df] bg-[#f6f5f4] text-[#37352f] hover:bg-[#ede9e4]"
+                    ? `${cat.tileBg} ${cat.iconColor} ${cat.borderColor} ring-2 ring-[#185CFF]/30 shadow-xs font-bold`
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
-                <span className="text-lg mb-0.5">{cat.emoji}</span>
-                <span className="text-[10px] truncate w-full text-center">{cat.label}</span>
+                <div
+                  className={`h-7 w-7 rounded-lg flex items-center justify-center mb-1 ${
+                    isSelected ? cat.tileBg : "bg-slate-50 text-slate-500"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <span className="text-[10px] font-medium truncate w-full text-center">
+                  {cat.shortLabel}
+                </span>
               </button>
             );
           })}
@@ -306,9 +307,9 @@ export function NewExpenseClientForm({
       <div className="rounded-xl border border-[#e5e3df] bg-white p-5 shadow-2xs space-y-3.5">
         <div className="flex items-center justify-between pb-2 border-b border-[#ede9e4]">
           <div>
-            <h2 className="text-xs font-bold text-[#0a1530] uppercase tracking-wider">Split Methodology</h2>
+            <h2 className="text-xs font-bold text-[#0a1530] uppercase tracking-wider">How to Split</h2>
             <p className="text-[11px] text-[#787671] font-normal">
-              Deterministic allocation across participants
+              Fair split across participants
             </p>
           </div>
 
@@ -467,7 +468,14 @@ export function NewExpenseClientForm({
         disabled={isPending || parsedAmount <= 0}
         className="w-full h-11 rounded-lg bg-[#185CFF] text-white hover:bg-[#1249D6] font-semibold text-sm flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
       >
-        {isPending ? "Recording Expense..." : "Record Expense · Split Now"}
+        {isPending ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Recording Expense...</span>
+          </>
+        ) : (
+          <span>Record Expense · Split Now</span>
+        )}
       </button>
     </form>
   );

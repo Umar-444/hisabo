@@ -8,13 +8,13 @@ import { useRouter } from "next/navigation";
 import { ui } from "@/lib/ui";
 
 const CATEGORIES = [
-  { value: "food", label: "🍽️ Food & Dining" },
-  { value: "groceries", label: "🛒 Groceries" },
-  { value: "rent", label: "🏠 Rent / Housing" },
-  { value: "utilities", label: "⚡ Utilities & Bills" },
-  { value: "transport", label: "🚗 Transport & Rides" },
-  { value: "entertainment", label: "🍿 Entertainment" },
-  { value: "general", label: "🧾 General Expense" },
+  { value: "food", label: "Food & Dining" },
+  { value: "groceries", label: "Groceries" },
+  { value: "rent", label: "Rent & Housing" },
+  { value: "utilities", label: "Utilities & Bills" },
+  { value: "transport", label: "Transport & Rides" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "general", label: "General Expense" },
 ];
 
 export function EditExpenseModalClient({

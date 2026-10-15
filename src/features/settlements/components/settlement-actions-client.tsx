@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { confirmSettlementAction, disputeSettlementAction } from "@/features/settlements/actions";
-import { Check, X } from "lucide-react";
+import { Check, X, Loader2 } from "lucide-react";
 
 export function SettlementActionButtonsClient({ settlementId }: { settlementId: string }) {
   const [isPending, startTransition] = useTransition();
@@ -27,7 +27,7 @@ export function SettlementActionButtonsClient({ settlementId }: { settlementId: 
       <button
         onClick={handleDispute}
         disabled={isPending}
-        className="px-2.5 py-1 rounded-lg border border-red-200 bg-white text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+        className="px-2.5 py-1 rounded-lg border border-red-200 bg-white text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors cursor-pointer"
       >
         Dispute
       </button>
@@ -35,10 +35,19 @@ export function SettlementActionButtonsClient({ settlementId }: { settlementId: 
       <button
         onClick={handleConfirm}
         disabled={isPending}
-        className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1 shadow-xs transition-colors"
+        className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-95"
       >
-        <Check className="h-3.5 w-3.5 stroke-[3]" />
-        <span>Confirm Receipt</span>
+        {isPending ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <span>Confirming...</span>
+          </>
+        ) : (
+          <>
+            <Check className="h-3.5 w-3.5 stroke-[3]" />
+            <span>Confirm Receipt</span>
+          </>
+        )}
       </button>
     </div>
   );
