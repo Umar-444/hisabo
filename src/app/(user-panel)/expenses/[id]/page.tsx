@@ -18,6 +18,8 @@ import { CancelExpenseButtonClient } from "@/features/expenses/components/cancel
 import { EditExpenseModalClient } from "@/features/expenses/components/edit-expense-modal";
 
 import { CategoryTile } from "@/lib/categories";
+import { ExpenseQuickPayButton } from "@/features/expenses/components/expense-quick-pay-button";
+import { PaymentRequestButton } from "@/features/settlements";
 
 export const dynamic = "force-dynamic";
 
@@ -96,11 +98,24 @@ export default async function ExpenseDetailPage({
 
         {/* User Share Banner */}
         {userShareMajor !== null && (
-          <div className="mt-5 rounded-[14px] bg-slate-50 p-3.5 border border-slate-200/80 flex items-center justify-between text-xs font-semibold">
-            <span className="text-slate-600">Your Share:</span>
-            <span className="font-bold font-mono text-[#0F172A] text-sm">
-              {expense.currency} {userShareMajor.toFixed(2)}
-            </span>
+          <div className="mt-5 rounded-[14px] bg-slate-50 p-3.5 border border-slate-200/80 flex items-center justify-between text-xs font-semibold gap-3">
+            <div>
+              <span className="text-slate-600 block">Your Share:</span>
+              <span className="font-bold font-mono text-[#0F172A] text-sm">
+                {expense.currency} {userShareMajor.toFixed(2)}
+              </span>
+            </div>
+
+            {expense.paidById !== session.id && (
+              <ExpenseQuickPayButton
+                groupId={expense.groupId}
+                groupName={expense.groupName}
+                payeeId={expense.paidById}
+                payeeName={expense.paidByName}
+                amount={userShareMajor}
+                currency={expense.currency}
+              />
+            )}
           </div>
         )}
       </div>
@@ -120,31 +135,45 @@ export default async function ExpenseDetailPage({
             const isUser = split.userId === session.id;
 
             return (
-              <div key={split.id} className="py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-blue-50 text-[#185CFF] font-black text-xs flex items-center justify-center">
+              <div key={split.id} className="py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-8 w-8 rounded-full bg-blue-50 text-[#185CFF] font-black text-xs flex items-center justify-center shrink-0">
                     {split.userName.charAt(0)}
                   </div>
-                  <div>
-                    <div className="text-sm font-bold text-[#0F172A]">
+                  <div className="min-w-0 truncate">
+                    <div className="text-sm font-bold text-[#0F172A] truncate">
                       {split.userName} {isUser ? "(You)" : ""}
                     </div>
-                    <div className="text-[11px] text-slate-400">@{split.userUsername}</div>
+                    <div className="text-[11px] text-slate-400 truncate">@{split.userUsername}</div>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <div className="text-sm font-bold font-mono text-[#0F172A] tabular-nums">
-                    {expense.currency} {shareMajor.toFixed(2)}
+                <div className="text-right flex items-center gap-2.5 shrink-0">
+                  <div>
+                    <div className="text-sm font-bold font-mono text-[#0F172A] tabular-nums">
+                      {expense.currency} {shareMajor.toFixed(2)}
+                    </div>
+                    <span
+                      className={ui.badge({
+                        status: split.decisionStatus as any,
+                        className: "text-[9px] px-2 py-0 mt-0.5",
+                      })}
+                    >
+                      {split.decisionStatus}
+                    </span>
                   </div>
-                  <span
-                    className={ui.badge({
-                      status: split.decisionStatus as any,
-                      className: "text-[9px] px-2 py-0 mt-0.5",
-                    })}
-                  >
-                    {split.decisionStatus}
-                  </span>
+
+                  {expense.paidById === session.id && !isUser && (
+                    <PaymentRequestButton
+                      groupId={expense.groupId}
+                      debtorId={split.userId}
+                      debtorName={split.userName}
+                      amount={shareMajor}
+                      currency={expense.currency}
+                      expenseId={expense.id}
+                      size="sm"
+                    />
+                  )}
                 </div>
               </div>
             );

@@ -44,6 +44,8 @@ export async function markAllNotificationsAsReadAction() {
   }
 }
 
+import { sendWebPushToUser } from "@/app/(backend)/_lib/services/push";
+
 export async function createInternalNotification(
   userId: string,
   type: string,
@@ -60,6 +62,17 @@ export async function createInternalNotification(
       link: link || null,
       readAt: null,
     });
+
+    // Asynchronously dispatch Web Push to user's registered devices
+    sendWebPushToUser(userId, {
+      title,
+      body: message,
+      url: link || "/dashboard",
+    }).catch((pushErr) => {
+      console.warn("Background web push dispatch skipped/failed:", pushErr);
+    });
+
+    revalidatePath("/notifications");
   } catch (e) {
     console.error("Failed to create internal notification:", e);
   }

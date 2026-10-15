@@ -14,10 +14,15 @@ import {
 
 interface Props {
   pendingActionsCount: number;
+  unreadNotificationsCount?: number;
   isCollapsed?: boolean;
 }
 
-export function UserSidebarNav({ pendingActionsCount, isCollapsed = false }: Props) {
+export function UserSidebarNav({
+  pendingActionsCount,
+  unreadNotificationsCount = 0,
+  isCollapsed = false,
+}: Props) {
   const pathname = usePathname();
 
   const navItems = [
@@ -51,12 +56,15 @@ export function UserSidebarNav({ pendingActionsCount, isCollapsed = false }: Pro
       icon: HandCoins,
       isActive: pathname.startsWith("/settlements"),
       badge: pendingActionsCount > 0 ? pendingActionsCount : undefined,
+      badgeColor: "amber",
     },
     {
       href: "/notifications",
       label: "Notifications",
       icon: Bell,
       isActive: pathname.startsWith("/notifications"),
+      badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : undefined,
+      badgeColor: "blue",
     },
     {
       href: "/settings",
@@ -94,12 +102,22 @@ export function UserSidebarNav({ pendingActionsCount, isCollapsed = false }: Pro
               />
               {!isCollapsed && <span>{item.label}</span>}
               {isCollapsed && item.badge !== undefined && (
-                <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-amber-500 animate-pulse ring-2 ring-white" />
+                <span
+                  className={`absolute -top-1 -right-1 flex h-2 w-2 rounded-full ring-2 ring-white ${
+                    item.badgeColor === "blue" ? "bg-[#185CFF]" : "bg-amber-500 animate-pulse"
+                  }`}
+                />
               )}
             </div>
 
             {!isCollapsed && item.badge !== undefined && (
-              <span className="flex h-4 min-w-[18px] items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-black text-white animate-pulse">
+              <span
+                className={`flex h-4 min-w-[18px] items-center justify-center rounded-full px-1 text-[9px] font-black text-white ${
+                  item.badgeColor === "blue"
+                    ? "bg-[#185CFF]"
+                    : "bg-amber-500 animate-pulse"
+                }`}
+              >
                 {item.badge}
               </span>
             )}

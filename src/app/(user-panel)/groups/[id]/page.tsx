@@ -24,6 +24,7 @@ import { GroupInviteModalClient } from "@/features/groups/components/group-invit
 import { GroupGovernanceCard } from "@/features/groups/components/group-governance-card";
 import { GroupActivityList } from "@/features/groups/components/group-activity-list";
 import { CategoryTile } from "@/lib/categories";
+import { RemindAllButton } from "@/features/settlements";
 
 export const dynamic = "force-dynamic";
 
@@ -161,17 +162,24 @@ export default async function GroupDetailPage({
 
       {/* Group Members Section */}
       <div className="rounded-[20px] border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h2 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
             <Users className="h-4 w-4 text-[#185CFF]" />
             Members & Balances ({group.members.length})
           </h2>
-          <GroupInviteModalClient
-            groupId={group.id}
-            groupName={group.name}
-            existingInvites={existingInvites}
-            userRole={group.currentUserRole}
-          />
+          <div className="flex items-center gap-2">
+            {(group.currentUserRole === "owner" ||
+              group.currentUserRole === "admin" ||
+              session.role === "admin") && (
+              <RemindAllButton groupId={group.id} />
+            )}
+            <GroupInviteModalClient
+              groupId={group.id}
+              groupName={group.name}
+              existingInvites={existingInvites}
+              userRole={group.currentUserRole}
+            />
+          </div>
         </div>
 
         <div className="divide-y divide-slate-100">

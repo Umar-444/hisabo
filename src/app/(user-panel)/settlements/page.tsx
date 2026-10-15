@@ -1,6 +1,9 @@
 import { getUserSession } from "@/lib/auth/user-session";
 import { redirect } from "next/navigation";
-import { getUserSettlementsQuery } from "@/features/settlements";
+import { getUserSettlementsQuery, checkAndEscalatePendingSettlementsQuery } from "@/features/settlements";
+import { db } from "@/app/(backend)/_lib/db";
+import { groupMembers } from "@/app/(backend)/_lib/db/schema";
+import { eq, and, or } from "drizzle-orm";
 import { fromMinorUnits } from "@/lib/money";
 import { ui } from "@/lib/ui";
 import Link from "next/link";
@@ -12,6 +15,7 @@ import {
   AlertTriangle,
   Building2,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { SettlementActionButtonsClient } from "@/features/settlements/components/settlement-actions-client";
 
@@ -23,7 +27,27 @@ export default async function SettlementsPage() {
     return null;
   }
 
-  const settlementsList = await getUserSettlementsQuery(session.id);
+  // Automatic 72h escalation check
+  try {
+    await checkAndEscalatePendingSettlementsQuery();
+  } catch (e) {
+    console.error("Escalation check error:", e);
+  }
+
+  const [settlementsList, userAdminMemberships] = await Promise.all([
+    getUserSettlementsQuery(session.id),
+    db
+      .select({ groupId: groupMembers.groupId })
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.userId, session.id),
+          or(eq(groupMembers.role, "admin"), eq(groupMembers.role, "owner"))
+        )
+      ),
+  ]);
+
+  const adminGroupIds = new Set(userAdminMemberships.map((g) => g.groupId));
 
   return (
     <div className="w-full space-y-5 pb-24">
@@ -110,6 +134,17 @@ export default async function SettlementsPage() {
                     </div>
                   )}
 
+                  {/* Rejection Details Banner (§3 & §5 of Hisabo-new.md) */}
+                  {st.status === "rejected" && st.rejectionReason && (
+                    <div className="rounded-xl bg-red-50/80 border border-red-200 p-3 text-xs text-red-900 font-medium flex items-center gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+                      <div>
+                        <span>Payment claim was rejected (reason: <strong>{st.rejectionReason}</strong>).</span>
+                        {st.rejectionNote && <span className="block text-[11px] text-red-700 italic mt-0.5">&ldquo;{st.rejectionNote}&rdquo;</span>}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Actions for Payee if Pending */}
                   {isPayee && st.status === "pending" && (
                     <div className="pt-1 flex items-center justify-between bg-amber-50/70 p-3 rounded-xl border border-amber-200/80">
@@ -118,7 +153,29 @@ export default async function SettlementsPage() {
                         Did you receive this payment?
                       </div>
 
-                      <SettlementActionButtonsClient settlementId={st.id} />
+                      <SettlementActionButtonsClient
+                        settlementId={st.id}
+                        payerName={st.payerName}
+                        amount={amountMajor}
+                        currency={st.currency}
+                      />
+                    </div>
+                  )}
+
+                  {/* Actions for Group Admin if Pending and not payee (Admin Override §3) */}
+                  {!isPayee && (adminGroupIds.has(st.groupId) || session.role === "admin") && st.status === "pending" && (
+                    <div className="pt-1 flex items-center justify-between bg-purple-50/70 p-3 rounded-xl border border-purple-200/80">
+                      <div className="text-xs text-purple-900 font-medium flex items-center gap-1.5">
+                        <ShieldCheck className="h-4 w-4 text-purple-600" />
+                        <span>Group Admin Override · Claim awaiting decision</span>
+                      </div>
+
+                      <SettlementActionButtonsClient
+                        settlementId={st.id}
+                        payerName={st.payerName}
+                        amount={amountMajor}
+                        currency={st.currency}
+                      />
                     </div>
                   )}
                 </div>

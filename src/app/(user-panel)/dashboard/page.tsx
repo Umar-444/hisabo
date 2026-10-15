@@ -23,7 +23,7 @@ import {
   DashboardBalanceHero,
   SerializedCurrencySummary,
 } from "@/features/balances/components/dashboard-balance-hero";
-import { getPendingActionsQuery } from "@/features/settlements";
+import { getPendingActionsQuery, getActivePaymentRequestsMapQuery, DashboardPeerDebtsWidget } from "@/features/settlements";
 import { PendingActionsCard } from "@/features/settlements/components/pending-actions-card";
 import { CategoryTile } from "@/lib/categories";
 
@@ -174,6 +174,28 @@ export default async function DashboardPage() {
     createdAt: st.createdAt.toISOString(),
   }));
 
+  const activeRequests = await getActivePaymentRequestsMapQuery(session.id);
+  const serializedRequestsMap: Record<string, string> = {};
+  for (const [k, v] of Object.entries(activeRequests)) {
+    serializedRequestsMap[k] = v.toISOString();
+  }
+
+  const adminGroupIds = new Set(
+    userGroups.filter((g) => g.role === "owner" || g.role === "admin").map((g) => g.id)
+  );
+
+  const dashboardPeers = aggregatedBalances.peerBalances.map((peer) => ({
+    peerId: peer.peerId,
+    peerName: peer.peerName,
+    peerUsername: peer.peerUsername,
+    groupId: peer.groupId,
+    groupName: peer.groupName,
+    currency: peer.currency,
+    amountMajor: Math.abs(fromMinorUnits(peer.netMinor)),
+    isOwedToUser: peer.netMinor > BigInt(0),
+    isAdminOfGroup: adminGroupIds.has(peer.groupId),
+  }));
+
   return (
     <div className="w-full space-y-5">
       {/* 1. Friendly Greeting */}
@@ -218,6 +240,12 @@ export default async function DashboardPage() {
             currencies={aggregatedBalances.currencies}
             byCurrency={serializedByCurrency}
             initialCurrency={aggregatedBalances.currency}
+          />
+
+          {/* Quick Pay & Payment Requests for Debts / Receivables */}
+          <DashboardPeerDebtsWidget
+            peers={dashboardPeers}
+            activeRequestsMap={serializedRequestsMap}
           />
 
           {/* 3. SettleSmart Ledger Integrity Strip (Quiet Trust Banner) */}

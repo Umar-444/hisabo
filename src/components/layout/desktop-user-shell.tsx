@@ -25,6 +25,7 @@ interface Props {
     role: string;
   };
   pendingActionsCount: number;
+  unreadNotificationsCount?: number;
   logoutAction: () => Promise<void>;
   children: React.ReactNode;
 }
@@ -32,6 +33,7 @@ interface Props {
 export function DesktopUserShell({
   session,
   pendingActionsCount,
+  unreadNotificationsCount = 0,
   logoutAction,
   children,
 }: Props) {
@@ -116,6 +118,7 @@ export function DesktopUserShell({
           {/* Sidebar Navigation Items */}
           <UserSidebarNav
             pendingActionsCount={pendingActionsCount}
+            unreadNotificationsCount={unreadNotificationsCount}
             isCollapsed={!isSidebarOpen}
           />
         </div>
@@ -213,23 +216,29 @@ export function DesktopUserShell({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Quick Bell Notification with Ping Indicator */}
+            {/* Quick Bell Notification with Ping Indicator & Real Count Badge */}
             <Link
               href="/notifications"
               title={
-                pendingActionsCount > 0
+                unreadNotificationsCount > 0
+                  ? `${unreadNotificationsCount} unread notification${unreadNotificationsCount > 1 ? "s" : ""}`
+                  : pendingActionsCount > 0
                   ? `${pendingActionsCount} pending action${pendingActionsCount > 1 ? "s" : ""} require your review`
                   : "Notification center"
               }
               className="relative p-2 rounded-lg text-slate-500 hover:text-[#185CFF] hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <Bell className="h-4 w-4" />
-              {pendingActionsCount > 0 && (
+              {unreadNotificationsCount > 0 ? (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#185CFF] text-white text-[9px] font-black px-1 shadow-xs ring-2 ring-white">
+                  {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                </span>
+              ) : pendingActionsCount > 0 ? (
                 <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-white" />
                 </span>
-              )}
+              ) : null}
             </Link>
 
             {/* Settings Quick Icon */}
@@ -274,19 +283,25 @@ export function DesktopUserShell({
               <Link
                 href="/notifications"
                 title={
-                  pendingActionsCount > 0
+                  unreadNotificationsCount > 0
+                    ? `${unreadNotificationsCount} unread notification${unreadNotificationsCount > 1 ? "s" : ""}`
+                    : pendingActionsCount > 0
                     ? `${pendingActionsCount} pending action${pendingActionsCount > 1 ? "s" : ""} require your review`
                     : "Notification center"
                 }
                 className="relative p-2 rounded-xl text-slate-500 hover:text-[#185CFF] hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <Bell className="h-4 w-4" />
-                {pendingActionsCount > 0 && (
+                {unreadNotificationsCount > 0 ? (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#185CFF] text-white text-[9px] font-black px-1 shadow-xs ring-2 ring-white">
+                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                  </span>
+                ) : pendingActionsCount > 0 ? (
                   <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-white" />
                   </span>
-                )}
+                ) : null}
               </Link>
 
               <Link
