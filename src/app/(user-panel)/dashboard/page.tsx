@@ -68,7 +68,7 @@ export default async function DashboardPage() {
   }
 
   // Fetch groups
-  let userGroups: { id: string; name: string; defaultCurrency: string; role: string }[] = [];
+  let userGroups: { id: string; name: string; defaultCurrency: string; role: string; joinedAt: Date | null }[] = [];
   try {
     if (isUuid(session.id)) {
       userGroups = await db
@@ -77,6 +77,7 @@ export default async function DashboardPage() {
           name: groups.name,
           defaultCurrency: groups.defaultCurrency,
           role: groupMembers.role,
+          joinedAt: groupMembers.joinedAt,
         })
         .from(groupMembers)
         .innerJoin(groups, eq(groupMembers.groupId, groups.id))
@@ -100,9 +101,10 @@ export default async function DashboardPage() {
   try {
     const userGroupIds = userGroups.map((g) => g.id);
     if (userGroupIds.length > 0) {
-      recentExpenses = await db
+      const rawRecent = await db
         .select({
           id: expenses.id,
+          groupId: expenses.groupId,
           description: expenses.description,
           amountMinor: expenses.amountMinor,
           currency: expenses.currency,
@@ -118,7 +120,18 @@ export default async function DashboardPage() {
           )
         )
         .orderBy(desc(expenses.createdAt))
-        .limit(6);
+        .limit(10);
+
+      recentExpenses = rawRecent
+        .filter((e) => {
+          const userGrp = userGroups.find((g) => g.id === e.groupId);
+          if (!userGrp) return false;
+          const isPrivileged = userGrp.role === "owner" || userGrp.role === "admin";
+          if (isPrivileged || e.paidBy === session.id) return true;
+          if (userGrp.joinedAt && e.createdAt >= userGrp.joinedAt) return true;
+          return false;
+        })
+        .slice(0, 6);
     }
   } catch (e) {
     console.error("Error loading expenses:", e);

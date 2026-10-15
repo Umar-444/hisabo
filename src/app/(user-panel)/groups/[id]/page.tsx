@@ -54,7 +54,7 @@ export default async function GroupDetailPage({
   }
 
   const [expensesList, existingInvites, activityLog] = await Promise.all([
-    getGroupExpensesQuery(id),
+    getGroupExpensesQuery(id, session.id),
     getGroupInvitesListQuery(id, session.id),
     getGroupActivityLogQuery(id),
   ]);

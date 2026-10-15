@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { DisputeButtonClient } from "@/features/expenses/components/dispute-button";
 import { CancelExpenseButtonClient } from "@/features/expenses/components/cancel-expense-button";
+import { EditExpenseModalClient } from "@/features/expenses/components/edit-expense-modal";
 
 export const dynamic = "force-dynamic";
 
@@ -190,10 +191,17 @@ export default async function ExpenseDetailPage({
           <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
             {!expense.isUserPayer && <DisputeButtonClient expenseId={expense.id} />}
             {expense.isUserPayer && (
-              <CancelExpenseButtonClient
-                expenseId={expense.id}
-                description={expense.description}
-              />
+              <div className="flex items-center gap-2">
+                <EditExpenseModalClient
+                  expenseId={expense.id}
+                  initialDescription={expense.description}
+                  initialCategory={expense.category}
+                />
+                <CancelExpenseButtonClient
+                  expenseId={expense.id}
+                  description={expense.description}
+                />
+              </div>
             )}
           </div>
         )}

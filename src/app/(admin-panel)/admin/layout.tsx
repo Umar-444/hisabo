@@ -180,7 +180,7 @@ export default async function AdminLayout({
           <div className="flex items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#d9f3e1] text-[#0f5132] border border-[#b8e8c6] px-2.5 py-0.5 text-[11px] font-semibold">
               <span className="h-1.5 w-1.5 rounded-full bg-[#1aae39] animate-pulse" />
-              Neon DB Connected
+              Database Connected
             </span>
 
             <span className="text-[11px] bg-[#f0eeec] text-[#37352f] px-2 py-0.5 rounded-md border border-[#e5e3df] font-mono">

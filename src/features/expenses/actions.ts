@@ -301,3 +301,118 @@ export async function cancelExpenseAction(expenseId: string, reason?: string) {
   }
 }
 
+export async function updateExpenseAction(
+  expenseId: string,
+  data: { description: string; category: string }
+) {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Authentication required" };
+  }
+
+  const description = data.description?.trim();
+  const category = data.category?.trim();
+
+  if (!description || description.length < 1) {
+    return { success: false, error: "Description is required" };
+  }
+
+  if (description.length > 140) {
+    return { success: false, error: "Description must be at most 140 characters" };
+  }
+
+  const validCategories = ["food", "groceries", "rent", "utilities", "transport", "entertainment", "general"];
+  if (!validCategories.includes(category)) {
+    return { success: false, error: "Invalid category selected" };
+  }
+
+  try {
+    // 1. Fetch expense
+    const [expenseRecord] = await db
+      .select({
+        id: expenses.id,
+        groupId: expenses.groupId,
+        paidBy: expenses.paidBy,
+        description: expenses.description,
+        category: expenses.category,
+        status: expenses.status,
+      })
+      .from(expenses)
+      .where(eq(expenses.id, expenseId));
+
+    if (!expenseRecord) {
+      return { success: false, error: "Expense not found" };
+    }
+
+    if (expenseRecord.status !== "active") {
+      return { success: false, error: "Only active expenses can be edited" };
+    }
+
+    // 2. Verify caller is payer or group admin
+    const [callerMembership] = await db
+      .select({ role: groupMembers.role, status: groupMembers.status })
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, expenseRecord.groupId),
+          eq(groupMembers.userId, session.id),
+          eq(groupMembers.status, "active")
+        )
+      );
+
+    const isPayer = expenseRecord.paidBy === session.id;
+    const isGroupAdmin =
+      callerMembership && (callerMembership.role === "owner" || callerMembership.role === "admin");
+
+    if (!isPayer && !isGroupAdmin) {
+      return {
+        success: false,
+        error: "Only the payer or a group admin can edit this expense",
+      };
+    }
+
+    // 3. Update expense in transaction
+    await db.transaction(async (tx) => {
+      await tx
+        .update(expenses)
+        .set({
+          description,
+          category,
+          updatedAt: new Date(),
+        })
+        .where(eq(expenses.id, expenseId));
+
+      await tx.insert(expenseEvents).values({
+        expenseId,
+        actorId: session.id,
+        eventType: "updated",
+        details: {
+          previousDescription: expenseRecord.description,
+          newDescription: description,
+          previousCategory: expenseRecord.category,
+          newCategory: category,
+        },
+      });
+
+      await tx.insert(outboxEvents).values({
+        eventType: "expense.updated",
+        payload: { expenseId, updatedBy: session.id, description, category },
+      });
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/expenses");
+    revalidatePath(`/expenses/${expenseId}`);
+    revalidatePath(`/groups/${expenseRecord.groupId}`);
+
+    return {
+      success: true,
+      message: "Expense details updated successfully.",
+    };
+  } catch (err: any) {
+    console.error("Update expense failed:", err);
+    return { success: false, error: err.message || "Failed to update expense" };
+  }
+}
+
+
