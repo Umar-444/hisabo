@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { QuickPaySheet } from "@/features/settlements";
+import { QuickPaySheet } from "@/features/settlements/components/quick-pay-sheet";
 
 interface Props {
   groupId: string;

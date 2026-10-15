@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import { SettleUpModalClient } from "./settle-up-modal";
 import { SerializedCurrencySummary } from "./dashboard-balance-hero";
-import { PaymentRequestButton, QuickPaySheet } from "@/features/settlements";
+import { PaymentRequestButton } from "@/features/settlements/components/payment-request-button";
+import { QuickPaySheet } from "@/features/settlements/components/quick-pay-sheet";
 
 export interface SerializedPeerBalance {
   peerId: string;
