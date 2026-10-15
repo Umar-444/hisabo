@@ -26,8 +26,15 @@ export async function loginAction(
 
   const validation = loginSchema.safeParse(rawData);
   if (!validation.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of validation.error.issues) {
+      const field = issue.path[0]?.toString();
+      if (field && !fieldErrors[field]) {
+        fieldErrors[field] = issue.message;
+      }
+    }
     const error = validation.error.issues[0]?.message || "Invalid input";
-    return { success: false, error };
+    return { success: false, error, fieldErrors };
   }
 
   const { email, password } = validation.data;
@@ -61,7 +68,10 @@ export async function loginAction(
     if (!existingUser) {
       return {
         success: false,
-        error: "No account found with this email. Please check your credentials or register.",
+        error: "Invalid email or password. Please verify your credentials and try again.",
+        fieldErrors: {
+          password: "Invalid email or password.",
+        },
       };
     }
 
@@ -86,7 +96,10 @@ export async function loginAction(
     if (!isValidPassword) {
       return {
         success: false,
-        error: "Incorrect password. Please try again.",
+        error: "Invalid email or password. Please verify your credentials and try again.",
+        fieldErrors: {
+          password: "Invalid email or password.",
+        },
       };
     }
 
@@ -129,12 +142,20 @@ export async function registerAction(
     username: formData.get("username"),
     email: formData.get("email"),
     password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword") || undefined,
   };
 
   const validation = registerSchema.safeParse(rawData);
   if (!validation.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of validation.error.issues) {
+      const field = issue.path[0]?.toString();
+      if (field && !fieldErrors[field]) {
+        fieldErrors[field] = issue.message;
+      }
+    }
     const error = validation.error.issues[0]?.message || "Invalid input";
-    return { success: false, error };
+    return { success: false, error, fieldErrors };
   }
 
   const { name, username, email, password } = validation.data;
@@ -172,12 +193,18 @@ export async function registerAction(
         return {
           success: false,
           error: "An account with this email already exists. Please log in.",
+          fieldErrors: {
+            email: "An account with this email already exists. Please log in.",
+          },
         };
       }
       if (existing.username?.toLowerCase() === username.toLowerCase()) {
         return {
           success: false,
           error: "This username is already taken. Please choose another one.",
+          fieldErrors: {
+            username: "This username is already taken. Please choose another one.",
+          },
         };
       }
     }

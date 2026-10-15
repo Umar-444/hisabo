@@ -1,10 +1,10 @@
 "use server";
 
 import { db } from "@/app/(backend)/_lib/db";
-import { expenses, expenseSplits, expenseEvents, outboxEvents, groupMembers } from "@/app/(backend)/_lib/db/schema";
+import { expenses, expenseSplits, expenseEvents, outboxEvents, groupMembers, notifications } from "@/app/(backend)/_lib/db/schema";
 import { getUserSession } from "@/lib/auth/user-session";
 import { createExpenseSchema, CreateExpenseInput, disputeExpenseSchema } from "./schema";
-import { calculateEqualSplits, toMinorUnits, validateCustomSplits, SplitResult } from "@/lib/money";
+import { calculateEqualSplits, toMinorUnits, fromMinorUnits, validateCustomSplits, SplitResult } from "@/lib/money";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
 
@@ -90,7 +90,20 @@ export async function createExpenseAction(input: CreateExpenseInput) {
         });
       }
 
-      // 3. Insert audit event
+      // 3. Insert in-app notifications for participants
+      for (const split of calculatedSplits) {
+        if (split.userId !== paidBy) {
+          await tx.insert(notifications).values({
+            userId: split.userId,
+            type: "expense_created",
+            title: `New Expense: ${description}`,
+            message: `${session.name || "A roommate"} recorded "${description}". Your split share is ${fromMinorUnits(split.shareMinor)} ${currency}.`,
+            link: `/expenses/${newExpense.id}`,
+          });
+        }
+      }
+
+      // 4. Insert audit event
       await tx.insert(expenseEvents).values({
         expenseId: newExpense.id,
         actorId: session.id,
@@ -163,6 +176,22 @@ export async function disputeExpenseAction(expenseId: string, reason: string) {
         eventType: "disputed",
         details: { reason },
       });
+
+      // Notify the expense payer
+      const [expenseRecord] = await tx
+        .select({ paidBy: expenses.paidBy, description: expenses.description })
+        .from(expenses)
+        .where(eq(expenses.id, expenseId));
+
+      if (expenseRecord && expenseRecord.paidBy !== session.id) {
+        await tx.insert(notifications).values({
+          userId: expenseRecord.paidBy,
+          type: "expense_disputed",
+          title: `Expense Disputed: ${expenseRecord.description}`,
+          message: `${session.name || "A roommate"} disputed their share on "${expenseRecord.description}": "${reason}".`,
+          link: `/expenses/${expenseId}`,
+        });
+      }
 
       // Add outbox notification
       await tx.insert(outboxEvents).values({

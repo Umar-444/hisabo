@@ -14,14 +14,16 @@ export const metadata: Metadata = {
   description:
     "A reliable shared-expense and balance-tracking platform for friends, roommates, and people living in shared flats or apartments.",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#185CFF",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 import { PwaInstallPrompt } from "@/components/layout/pwa-install-prompt";
@@ -34,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${dmSans.variable} font-sans h-full antialiased`}>
       <head>
-        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>

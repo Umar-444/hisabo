@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/app/(backend)/_lib/db";
 import { groups, groupMembers, expenses } from "@/app/(backend)/_lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray, and } from "drizzle-orm";
 import { ui } from "@/lib/ui";
 import { isUuid } from "@/lib/utils";
 import {
@@ -98,19 +98,28 @@ export default async function DashboardPage() {
   }[] = [];
 
   try {
-    recentExpenses = await db
-      .select({
-        id: expenses.id,
-        description: expenses.description,
-        amountMinor: expenses.amountMinor,
-        currency: expenses.currency,
-        createdAt: expenses.createdAt,
-        paidBy: expenses.paidBy,
-        category: expenses.category,
-      })
-      .from(expenses)
-      .orderBy(desc(expenses.createdAt))
-      .limit(6);
+    const userGroupIds = userGroups.map((g) => g.id);
+    if (userGroupIds.length > 0) {
+      recentExpenses = await db
+        .select({
+          id: expenses.id,
+          description: expenses.description,
+          amountMinor: expenses.amountMinor,
+          currency: expenses.currency,
+          createdAt: expenses.createdAt,
+          paidBy: expenses.paidBy,
+          category: expenses.category,
+        })
+        .from(expenses)
+        .where(
+          and(
+            inArray(expenses.groupId, userGroupIds),
+            eq(expenses.status, "active")
+          )
+        )
+        .orderBy(desc(expenses.createdAt))
+        .limit(6);
+    }
   } catch (e) {
     console.error("Error loading expenses:", e);
   }
@@ -167,7 +176,8 @@ export default async function DashboardPage() {
         </div>
 
         <Link
-          href="/groups"
+          href={userGroups.length > 0 ? `/groups/${userGroups[0].id}` : "/groups"}
+          prefetch={false}
           className="inline-flex items-center gap-1.5 rounded-md border border-[#c8c4be] bg-white px-2.5 py-1 text-xs font-semibold text-[#1a1a1a] shadow-2xs hover:bg-[#f6f5f4] transition-colors"
         >
           <Building2 className="h-3.5 w-3.5 text-[#185CFF]" />
@@ -266,7 +276,12 @@ export default async function DashboardPage() {
                   const emoji = categoryEmojis[exp.category] || "🧾";
 
                   return (
-                    <div key={exp.id} className={ui.transactionRow}>
+                    <Link
+                      key={exp.id}
+                      href={`/expenses/${exp.id}`}
+                      prefetch={false}
+                      className={`${ui.transactionRow} hover:bg-slate-50/80 transition-colors cursor-pointer block`}
+                    >
                       {/* Category Tile */}
                       <div className={ui.categoryTile}>
                         <span>{emoji}</span>
@@ -278,7 +293,7 @@ export default async function DashboardPage() {
                           {exp.description}
                         </div>
                         <div className="text-[11px] text-[#787671] font-normal leading-normal mt-0.5">
-                          {isPayer ? "Paid by you" : "Paid by roommate"} · 4 participants
+                          {isPayer ? "Paid by you" : "Paid by roommate"}
                         </div>
                       </div>
 
@@ -297,7 +312,7 @@ export default async function DashboardPage() {
                           {isPayer ? "You paid total" : `Total: ${exp.currency} ${fromMinorUnits(exp.amountMinor).toFixed(2)}`}
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>

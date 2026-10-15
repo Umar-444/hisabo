@@ -74,6 +74,7 @@ export function UserSidebarNav({ pendingActionsCount, isCollapsed = false }: Pro
           <Link
             key={item.href}
             href={item.href}
+            prefetch={false}
             title={isCollapsed ? item.label : undefined}
             className={`flex items-center rounded-lg text-xs font-semibold transition-all ${
               isCollapsed

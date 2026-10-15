@@ -16,7 +16,14 @@ export const registerSchema = z.object({
     .toLowerCase(),
   email: z.string().email("Please enter a valid email address").trim().toLowerCase(),
   password: z.string().min(6, "Password must be at least 6 characters"),
-});
+  confirmPassword: z.string().optional(),
+}).refine(
+  (data) => !data.confirmPassword || data.password === data.confirmPassword,
+  {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  }
+);
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;

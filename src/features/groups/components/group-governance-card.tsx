@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { leaveGroupAction, archiveGroupAction, unarchiveGroupAction, transferGroupOwnershipAction } from "../actions";
-import { Shield, LogOut, Archive, RotateCcw, AlertTriangle, Loader2, UserCheck, KeyRound, X } from "lucide-react";
+import { leaveGroupAction, archiveGroupAction, unarchiveGroupAction, transferGroupOwnershipAction, updateGroupDetailsAction } from "../actions";
+import { Shield, LogOut, Archive, RotateCcw, AlertTriangle, Loader2, UserCheck, KeyRound, X, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ui } from "@/lib/ui";
@@ -17,7 +17,9 @@ interface GroupMemberSummary {
 interface Props {
   groupId: string;
   groupName: string;
+  groupDescription?: string | null;
   isOwner: boolean;
+  userRole?: string;
   status: string;
   userNetBalanceMinor: string;
   currency: string;
@@ -28,7 +30,9 @@ interface Props {
 export function GroupGovernanceCard({
   groupId,
   groupName,
+  groupDescription,
   isOwner,
+  userRole,
   status,
   userNetBalanceMinor,
   currency,
@@ -38,12 +42,20 @@ export function GroupGovernanceCard({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  // Edit group details state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editName, setEditName] = useState(groupName);
+  const [editDesc, setEditDesc] = useState(groupDescription || "");
+  const [isUpdatingDetails, setIsUpdatingDetails] = useState(false);
+
   // Two-step ownership transfer modal state (TASK-15)
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferStep, setTransferStep] = useState<1 | 2>(1);
   const [selectedMemberId, setSelectedMemberId] = useState<string>("");
   const [password, setPassword] = useState("");
   const [transferError, setTransferError] = useState<string | null>(null);
+
+  const canManage = isOwner || userRole === "admin";
 
   const eligibleCandidates = members.filter(
     (m) => m.id !== currentUserId && m.role !== "owner"
@@ -138,11 +150,10 @@ export function GroupGovernanceCard({
           </div>
 
           <span
-            className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
-              isArchived
-                ? "bg-slate-100 text-slate-700 border-slate-200"
-                : "bg-emerald-50 text-emerald-800 border-emerald-200"
-            }`}
+            className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${isArchived
+              ? "bg-slate-100 text-slate-700 border-slate-200"
+              : "bg-emerald-50 text-emerald-800 border-emerald-200"
+              }`}
           >
             {isArchived ? "Archived Pool" : "Active Pool"}
           </span>
@@ -155,6 +166,23 @@ export function GroupGovernanceCard({
         </p>
 
         <div className="flex flex-wrap items-center gap-2 pt-1">
+          {/* Edit Group Details Button (TASK: Bug 11) */}
+          {canManage && !isArchived && (
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => {
+                setEditName(groupName);
+                setEditDesc(groupDescription || "");
+                setShowEditModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
+            >
+              <Edit3 className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Edit Details</span>
+            </button>
+          )}
+
           {/* Transfer Ownership Button (TASK-15) */}
           {isOwner && !isArchived && (
             <button
@@ -271,11 +299,10 @@ export function GroupGovernanceCard({
                     {eligibleCandidates.map((candidate) => (
                       <label
                         key={candidate.id}
-                        className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                          selectedMemberId === candidate.id
-                            ? "border-[#185CFF] bg-blue-50/50 shadow-2xs"
-                            : "border-slate-200 hover:bg-slate-50"
-                        }`}
+                        className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedMemberId === candidate.id
+                          ? "border-[#185CFF] bg-blue-50/50 shadow-2xs"
+                          : "border-slate-200 hover:bg-slate-50"
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <input
@@ -373,6 +400,111 @@ export function GroupGovernanceCard({
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Group Details Modal (TASK: Bug 11) */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Edit3 className="h-5 w-5 text-indigo-600" />
+                <h3 className="text-base font-bold text-slate-900">Edit Group Details</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!editName.trim()) {
+                  toast.error("Group name cannot be empty.");
+                  return;
+                }
+                setIsUpdatingDetails(true);
+                startTransition(async () => {
+                  try {
+                    const res = await updateGroupDetailsAction(groupId, {
+                      name: editName.trim(),
+                      description: editDesc.trim(),
+                    });
+                    if (res.success) {
+                      toast.success(res.message || "Group updated successfully!");
+                      setShowEditModal(false);
+                      router.refresh();
+                    } else {
+                      toast.error(res.error || "Failed to update group.");
+                    }
+                  } catch (err: any) {
+                    toast.error(err?.message || "Failed to update group.");
+                  } finally {
+                    setIsUpdatingDetails(false);
+                  }
+                });
+              }}
+              className="mt-4 space-y-4"
+            >
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Group Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  maxLength={100}
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#185CFF]"
+                  placeholder="e.g. Riyadh Flat 402"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Description (Optional)
+                </label>
+                <textarea
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  rows={3}
+                  maxLength={300}
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#185CFF]"
+                  placeholder="e.g. Shared expenses for utilities, groceries, and rent."
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingDetails || !editName.trim()}
+                  className="h-10 px-4 rounded-xl bg-[#185CFF] text-xs font-bold text-white hover:bg-[#1249D6] transition-colors disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  {isUpdatingDetails ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Save Changes</span>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

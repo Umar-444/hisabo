@@ -7,8 +7,8 @@ import { ShieldCheck, Lock, Mail, Eye, EyeOff, KeyRound, ArrowLeft } from "lucid
 
 export function AdminLoginClient() {
   const [state, formAction, isPending] = useActionState(adminLoginAction, null);
-  const [email, setEmail] = useState("admin@hisabo.com");
-  const [password, setPassword] = useState("Admin@Hisabo2026!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -40,35 +40,7 @@ export function AdminLoginClient() {
           </p>
         </div>
 
-        {/* Quick Demo Credentials Box (Notion Pastel Callout) */}
-        <div className="rounded-xl border border-[#b8dcfa] bg-[#dcecfa]/30 p-3.5 mb-5">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#005bab] flex items-center gap-1.5">
-              <KeyRound className="h-3.5 w-3.5" />
-              Demo Credentials
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail("admin@hisabo.com");
-                setPassword("Admin@Hisabo2026!");
-              }}
-              className="text-xs text-[#185CFF] hover:underline font-medium cursor-pointer"
-            >
-              Auto Fill
-            </button>
-          </div>
-          <div className="space-y-0.5 text-xs font-mono text-[#37352f]">
-            <div className="flex justify-between">
-              <span className="text-[#787671]">Username:</span>
-              <span className="font-semibold text-[#1a1a1a]">admin@hisabo.com</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#787671]">Password:</span>
-              <span className="font-semibold text-[#1a1a1a]">Admin@Hisabo2026!</span>
-            </div>
-          </div>
-        </div>
+
 
         {/* Error notification */}
         {state?.error && (
