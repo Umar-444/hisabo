@@ -191,11 +191,10 @@ export function GroupInviteModalClient({
               <button
                 type="button"
                 onClick={() => setActiveTab("username")}
-                className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  activeTab === "username"
+                className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeTab === "username"
                     ? "bg-white text-[#185CFF] shadow-xs"
                     : "text-slate-600 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 <AtSign className="h-3.5 w-3.5" />
                 <span>Username / Email</span>
@@ -204,11 +203,10 @@ export function GroupInviteModalClient({
               <button
                 type="button"
                 onClick={() => setActiveTab("link")}
-                className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  activeTab === "link"
+                className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeTab === "link"
                     ? "bg-white text-[#185CFF] shadow-xs"
                     : "text-slate-600 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 <Link2 className="h-3.5 w-3.5" />
                 <span>Shareable Link</span>
@@ -220,11 +218,10 @@ export function GroupInviteModalClient({
               <div className="space-y-4 animate-in fade-in duration-150">
                 {directMsg && (
                   <div
-                    className={`rounded-xl p-3 text-xs font-bold flex items-center gap-2 border ${
-                      directMsg.type === "success"
+                    className={`rounded-xl p-3 text-xs font-bold flex items-center gap-2 border ${directMsg.type === "success"
                         ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                         : "bg-red-50 text-red-800 border-red-200"
-                    }`}
+                      }`}
                   >
                     {directMsg.type === "success" ? (
                       <UserCheck className="h-4 w-4 shrink-0 text-emerald-600" />
@@ -341,146 +338,143 @@ export function GroupInviteModalClient({
                   /* Generator Options */
                   <div className="space-y-4">
                     <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Link Expiration Window
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { days: 1, label: "24 Hours" },
-                      { days: 7, label: "7 Days (Std)" },
-                      { days: 30, label: "30 Days" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.days}
-                        type="button"
-                        onClick={() => setExpirationDays(opt.days)}
-                        className={`py-2 px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                          expirationDays === opt.days
-                            ? "border-[#185CFF] bg-blue-50 text-[#185CFF] shadow-xs"
-                            : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Usage Security
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsSingleUse(false)}
-                      className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
-                        !isSingleUse
-                          ? "border-[#185CFF] bg-blue-50 text-[#185CFF]"
-                          : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className="text-xs font-bold">Multi-Use</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        Multiple flatmates can join
-                      </div>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsSingleUse(true)}
-                      className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
-                        isSingleUse
-                          ? "border-[#185CFF] bg-blue-50 text-[#185CFF]"
-                          : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className="text-xs font-bold">Single-Use (1x)</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        Burns after 1 join
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={handleCreate}
-                  className="w-full h-11 rounded-xl bg-[#185CFF] hover:bg-[#1249D6] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-[#185CFF]/20 transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <UserPlus className="h-4 w-4" />
-                  )}
-                  <span>Generate Tokenized Invite Link</span>
-                </button>
-              </div>
-            )}
-
-            {/* Existing Active Invites List */}
-            {invites.length > 0 && (
-              <div className="pt-3 border-t border-slate-100 space-y-2">
-                <div className="text-xs font-bold text-slate-700">
-                  Active Invites ({invites.filter((i) => i.isActive).length})
-                </div>
-
-                <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
-                  {invites.map((inv) => (
-                    <div
-                      key={inv.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs"
-                    >
-                      <div className="min-w-0 pr-2">
-                        <div className="font-mono text-[11px] text-slate-700 truncate">
-                          ...{inv.token.slice(-10)}
-                        </div>
-                        <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                          <Clock className="h-3 w-3" />
-                          <span>
-                            {inv.isActive
-                              ? `Expires ${new Date(inv.expiresAt).toLocaleDateString()}`
-                              : inv.isRevoked
-                              ? "Revoked"
-                              : "Expired"}
-                          </span>
-                          <span>·</span>
-                          <span>{inv.useCount} joined</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1 shrink-0">
-                        {inv.isActive && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => handleCopy(inv.token)}
-                              className="p-1 text-slate-500 hover:text-[#185CFF] rounded-lg transition-colors cursor-pointer"
-                              title="Copy link"
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </button>
-                            {isAdmin && (
-                              <button
-                                type="button"
-                                onClick={() => handleRevoke(inv.id)}
-                                className="p-1 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
-                                title="Revoke link"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            )}
-                          </>
-                        )}
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                        Link Expiration Window
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { days: 1, label: "24 Hours" },
+                          { days: 7, label: "7 Days (Std)" },
+                          { days: 30, label: "30 Days" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.days}
+                            type="button"
+                            onClick={() => setExpirationDays(opt.days)}
+                            className={`py-2 px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${expirationDays === opt.days
+                                ? "border-[#185CFF] bg-blue-50 text-[#185CFF] shadow-xs"
+                                : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                              }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                        Usage Security
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsSingleUse(false)}
+                          className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${!isSingleUse
+                              ? "border-[#185CFF] bg-blue-50 text-[#185CFF]"
+                              : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                            }`}
+                        >
+                          <div className="text-xs font-bold">Multi-Use</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            Multiple flatmates can join
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsSingleUse(true)}
+                          className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${isSingleUse
+                              ? "border-[#185CFF] bg-blue-50 text-[#185CFF]"
+                              : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                            }`}
+                        >
+                          <div className="text-xs font-bold">Single-Use (1x)</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            Burns after 1 join
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={handleCreate}
+                      className="w-full h-11 rounded-xl bg-[#185CFF] hover:bg-[#1249D6] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-[#185CFF]/20 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <UserPlus className="h-4 w-4" />
+                      )}
+                      <span>Generate Tokenized Invite Link</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Existing Active Invites List - strictly for group admins/owners */}
+                {isAdmin && invites.length > 0 && (
+                  <div className="pt-3 border-t border-slate-100 space-y-2">
+                    <div className="text-xs font-bold text-slate-700">
+                      Active Invites ({invites.filter((i) => i.isActive).length})
+                    </div>
+
+                    <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
+                      {invites.map((inv) => (
+                        <div
+                          key={inv.id}
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs"
+                        >
+                          <div className="min-w-0 pr-2">
+                            <div className="font-mono text-[11px] text-slate-700 truncate">
+                              ...{inv.token.slice(-10)}
+                            </div>
+                            <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                              <Clock className="h-3 w-3" />
+                              <span>
+                                {inv.isActive
+                                  ? `Expires ${new Date(inv.expiresAt).toLocaleDateString()}`
+                                  : inv.isRevoked
+                                    ? "Revoked"
+                                    : "Expired"}
+                              </span>
+                              <span>·</span>
+                              <span>{inv.useCount} joined</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            {inv.isActive && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(inv.token)}
+                                  className="p-1 text-slate-500 hover:text-[#185CFF] rounded-lg transition-colors cursor-pointer"
+                                  title="Copy link"
+                                >
+                                  <Copy className="h-3.5 w-3.5" />
+                                </button>
+                                {isAdmin && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRevoke(inv.id)}
+                                    className="p-1 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+                                    title="Revoke link"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
           </div>
         </div>
       )}

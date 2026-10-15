@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { DisputeButtonClient } from "@/features/expenses/components/dispute-button";
+import { CancelExpenseButtonClient } from "@/features/expenses/components/cancel-expense-button";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,19 @@ export default async function ExpenseDetailPage({
         </span>
         <div className="w-10" />
       </div>
+
+      {/* Cancelled Banner if voided */}
+      {expense.status === "cancelled" && (
+        <div className="rounded-2xl border border-red-200 bg-red-50/90 p-4 text-center space-y-1">
+          <div className="text-xs font-bold text-red-900 flex items-center justify-center gap-1.5">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <span>Expense Cancelled / Voided</span>
+          </div>
+          <p className="text-xs text-red-700/90">
+            This expense was cancelled and is completely excluded from active ledger balances.
+          </p>
+        </div>
+      )}
 
       {/* Hero Summary Card */}
       <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-xs text-center relative overflow-hidden">
@@ -171,10 +185,16 @@ export default async function ExpenseDetailPage({
           <span className="font-bold text-emerald-600">Zero-Loss Verified</span>
         </div>
 
-        {/* Dispute Action for Participants if Active */}
+        {/* Actions for Active Expense */}
         {expense.status === "active" && (
-          <div className="pt-3 border-t border-slate-100">
-            <DisputeButtonClient expenseId={expense.id} />
+          <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            {!expense.isUserPayer && <DisputeButtonClient expenseId={expense.id} />}
+            {expense.isUserPayer && (
+              <CancelExpenseButtonClient
+                expenseId={expense.id}
+                description={expense.description}
+              />
+            )}
           </div>
         )}
       </div>

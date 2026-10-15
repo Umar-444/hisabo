@@ -4,14 +4,13 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { loginAction } from "@/features/auth/actions";
 import { ui } from "@/lib/ui";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, Sparkles, AlertCircle, X, HelpCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginAction, null);
-  const [email, setEmail] = useState("umar@hisabo.com");
-  const [password, setPassword] = useState("Admin@Hisabo2026!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [forgotModalOpen, setForgotModalOpen] = useState(false);
   const [dismissedError, setDismissedError] = useState(false);
 
   return (
@@ -25,12 +24,7 @@ export default function LoginPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to Hisabo
         </Link>
-        <Link
-          href="/admin/login"
-          className="text-slate-400 hover:text-slate-700 transition-colors"
-        >
-          Admin Console →
-        </Link>
+        <span className="text-slate-400">Secure Sign In</span>
       </div>
 
       <div className="w-full max-w-md rounded-3xl border border-slate-200/90 bg-white p-8 shadow-xl shadow-slate-200/60">
@@ -44,28 +38,6 @@ export default function LoginPage() {
           <p className="text-xs text-slate-500 mt-1">
             Sign in to track your group expenses and balances
           </p>
-        </div>
-
-        {/* Demo Fast Login Box */}
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-3.5 mb-6 text-xs text-blue-900 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#185CFF] shrink-0" />
-            <div>
-              <span className="font-bold">Test Account: </span>
-              <span className="font-mono text-slate-700">umar@hisabo.com</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setEmail("umar@hisabo.com");
-              setPassword("Admin@Hisabo2026!");
-              setDismissedError(true);
-            }}
-            className="text-[11px] font-bold text-[#185CFF] hover:underline cursor-pointer"
-          >
-            Fill Demo
-          </button>
         </div>
 
         {/* Error notification */}
@@ -180,59 +152,6 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
-
-      {/* Password Recovery Help Modal */}
-      {forgotModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-sm rounded-[24px] border border-slate-200 bg-white p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 relative">
-            <button
-              type="button"
-              onClick={() => setForgotModalOpen(false)}
-              className="absolute right-4 top-4 p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-blue-50 text-[#185CFF] flex items-center justify-center shrink-0">
-                <HelpCircle className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-[#0F172A]">Password Recovery</h3>
-                <p className="text-[11px] text-slate-400">Hisabo Account Security</p>
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs text-slate-600 leading-relaxed space-y-2">
-              <p>
-                In the current version, passwords cannot be reset automatically without email confirmation tokens.
-              </p>
-              <p>
-                If you forgot your password, please email our support team at{" "}
-                <a
-                  href="mailto:support@hisabo.com?subject=Password%20Reset%20Request"
-                  className="font-bold text-[#185CFF] hover:underline"
-                >
-                  support@hisabo.com
-                </a>{" "}
-                or ask a flatmate/admin in your shared group to verify your identity.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setForgotModalOpen(false)}
-              className={ui.btn({
-                variant: "primary",
-                size: "md",
-                className: "w-full font-bold",
-              })}
-            >
-              Got it, thanks
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

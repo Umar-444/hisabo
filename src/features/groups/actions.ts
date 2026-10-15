@@ -5,7 +5,7 @@ import { groups, groupMembers, groupInvitations, users, outboxEvents, notificati
 import { getUserSession } from "@/lib/auth/user-session";
 import { createGroupSchema, inviteMemberSchema } from "./schema";
 import { revalidatePath } from "next/cache";
-import { eq, or, and, sql } from "drizzle-orm";
+import { eq, or, and, sql, ne } from "drizzle-orm";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { getClientIp, checkRateLimit, RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
@@ -375,15 +375,27 @@ export async function joinGroupByTokenAction(token: string) {
           },
         });
 
-        // Notify the person who created the invite link
-        if (invitation.invitedBy !== session.id) {
-          await tx.insert(notifications).values({
-            userId: invitation.invitedBy,
-            type: "group_invite",
+        // Notify all other flatmates in the group that a new member has joined
+        const otherMembers = await tx
+          .select({ userId: groupMembers.userId })
+          .from(groupMembers)
+          .where(
+            and(
+              eq(groupMembers.groupId, invitation.groupId),
+              ne(groupMembers.userId, session.id),
+              eq(groupMembers.status, "active")
+            )
+          );
+
+        if (otherMembers.length > 0) {
+          const notificationsToInsert = otherMembers.map((m) => ({
+            userId: m.userId,
+            type: "group_invite" as const,
             title: "New Flatmate Joined",
-            message: `${session.name || "A roommate"} accepted your invitation and joined the group.`,
+            message: `${session.name || "A new flatmate"} joined the group.`,
             link: `/groups/${invitation.groupId}`,
-          });
+          }));
+          await tx.insert(notifications).values(notificationsToInsert);
         }
       });
     }

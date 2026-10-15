@@ -26,7 +26,8 @@ export function SettleUpModalClient({
 }: Props) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [amount, setAmount] = useState(suggestedAmount.toFixed(2));
+  const formattedSuggested = (Math.round(suggestedAmount * 100) / 100).toFixed(2);
+  const [amount, setAmount] = useState(formattedSuggested);
   const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "cash" | "other">("bank_transfer");
   const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -89,7 +90,10 @@ export function SettleUpModalClient({
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setAmount((Math.round(suggestedAmount * 100) / 100).toFixed(2));
+          setIsOpen(true);
+        }}
         className="h-8 px-3 rounded-xl bg-[#185CFF] text-white font-bold text-xs hover:bg-[#1249D6] transition-all shadow-xs active:scale-[0.98] cursor-pointer"
       >
         Settle Up

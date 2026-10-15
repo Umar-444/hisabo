@@ -97,9 +97,6 @@ export default function HomePage() {
             <a href="#download" className="transition-colors hover:text-[#0a1530]">
               Download PWA
             </a>
-            <a href="#developers" className="transition-colors hover:text-[#0a1530]">
-              Developer Hub
-            </a>
           </nav>
 
           {/* Action Buttons */}
@@ -621,95 +618,66 @@ export default function HomePage() {
           </div>
 
           {/* ------------------------------------------------------------------- */}
-          {/* DEVELOPER LINKS & OPEN ARCHITECTURE SECTION                         */}
+          {/* TRUST, PRIVACY & ACCURACY SECTION                                   */}
           {/* ------------------------------------------------------------------- */}
-          <div id="developers" className="mt-20">
+          <div className="mt-20">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <div className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#185cff] border border-blue-200 mb-3">
-                <Cpu className="h-3.5 w-3.5" />
-                Developer Hub & Engineering
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Auditable Roommate Accounting
               </div>
               <h3 className="text-2xl font-black tracking-tight sm:text-3xl text-[#0a1530]">
-                Modern Full-Stack Architecture
+                Built for Fair, Transparent Living
               </h3>
               <p className="mt-2 text-sm text-[#787671]">
-                Built as a modular monolith adhering to the 2026 React 19 server-first model and audited financial invariants.
+                Every expense, share split, and settlement is verified to ensure zero rounding loss and complete peace of mind.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Tech 1 */}
+              {/* Feature 1 */}
               <div className="rounded-xl border border-[#e5e3df] bg-[#f6f5f4] p-4 text-left">
                 <div className="flex items-center gap-2 text-xs font-bold text-[#185cff] mb-1">
-                  <Layers className="h-4 w-4" />
-                  Next.js 16 & React 19
+                  <Check className="h-4 w-4" />
+                  Exact Integer Math
                 </div>
                 <p className="text-xs text-[#5d5b54]">
-                  Server Components by default, minimal client islands, Turbopack, and type-safe server actions.
+                  Stored and calculated strictly in minor currency units (halalas/cents) with zero floating-point rounding errors.
                 </p>
               </div>
 
-              {/* Tech 2 */}
+              {/* Feature 2 */}
               <div className="rounded-xl border border-[#e5e3df] bg-[#f6f5f4] p-4 text-left">
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 mb-1">
-                  <Database className="h-4 w-4" />
-                  Neon PostgreSQL
+                  <ShieldCheck className="h-4 w-4" />
+                  Two-Way Confirmation
                 </div>
                 <p className="text-xs text-[#5d5b54]">
-                  Serverless PostgreSQL with connection pooling, strict ACID transactions, and BIGINT minor units.
+                  Settlements require confirmation from the recipient so debts are never cleared without mutual agreement.
                 </p>
               </div>
 
-              {/* Tech 3 */}
+              {/* Feature 3 */}
               <div className="rounded-xl border border-[#e5e3df] bg-[#f6f5f4] p-4 text-left">
                 <div className="flex items-center gap-2 text-xs font-bold text-purple-600 mb-1">
-                  <ShieldCheck className="h-4 w-4" />
-                  Drizzle ORM & Zod
+                  <Lock className="h-4 w-4" />
+                  Private & Secure
                 </div>
                 <p className="text-xs text-[#5d5b54]">
-                  Single source of truth runtime validation, typed migrations, and zero floating-point drift.
+                  Your financial records and flat ledgers are accessible only to active, verified members of your group.
                 </p>
               </div>
 
-              {/* Tech 4 */}
+              {/* Feature 4 */}
               <div className="rounded-xl border border-[#e5e3df] bg-[#f6f5f4] p-4 text-left">
                 <div className="flex items-center gap-2 text-xs font-bold text-amber-600 mb-1">
-                  <Zap className="h-4 w-4" />
-                  Sliding-Window Limiter
+                  <Smartphone className="h-4 w-4" />
+                  Fast & Lightweight
                 </div>
                 <p className="text-xs text-[#5d5b54]">
-                  In-memory TTL sliding window rate limiting on authentication and invite join endpoints.
+                  Install as a standalone web app on any device with instant launch and real-time push updates.
                 </p>
               </div>
-            </div>
-
-            {/* Quick Developer Action Links */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
-              <Link
-                href="/api/health"
-                target="_blank"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#e5e3df] bg-white px-3.5 py-2 text-[#37352f] hover:bg-slate-50 transition-colors"
-              >
-                <Globe className="h-3.5 w-3.5 text-[#185cff]" />
-                Endpoint: /api/health
-                <ExternalLink className="h-3 w-3 text-slate-400" />
-              </Link>
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#e5e3df] bg-white px-3.5 py-2 text-[#37352f] hover:bg-slate-50 transition-colors"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5 text-purple-600" />
-                Admin Portal & Currency Controller
-              </Link>
-              <a
-                href="https://github.com/Umar-444/hisabo"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#e5e3df] bg-white px-3.5 py-2 text-[#37352f] hover:bg-slate-50 transition-colors"
-              >
-                <span>GitHub: Umar-444/hisabo</span>
-                <ExternalLink className="h-3 w-3 text-slate-400" />
-              </a>
             </div>
           </div>
         </div>
@@ -720,7 +688,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       <footer className="bg-white py-14 text-xs text-[#787671]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 pb-12 border-b border-[#e5e3df]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8 pb-12 border-b border-[#e5e3df]">
             {/* Brand Column */}
             <div className="col-span-2">
               <div className="flex items-center gap-2.5">
@@ -732,9 +700,9 @@ export default function HomePage() {
               <p className="mt-3 text-xs text-[#787671] max-w-sm leading-relaxed">
                 Split easy. Settle smart. The auditable shared expense ledger for roommates, flatmates, and group travel.
               </p>
-              <div className="mt-4 flex items-center gap-2 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md w-fit border border-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                All Ledger Systems Operational
+              <div className="mt-4 flex items-center gap-2 text-[11px] font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md w-fit border border-slate-200">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#185cff]" />
+                Auditable Shared Expense Ledger
               </div>
             </div>
 
@@ -750,38 +718,24 @@ export default function HomePage() {
               </ul>
             </div>
 
-            {/* Engineering & Math Column */}
+            {/* Access & Account */}
             <div>
-              <div className="font-bold text-[#1a1a1a] uppercase tracking-wider mb-3">Financial Engine</div>
+              <div className="font-bold text-[#1a1a1a] uppercase tracking-wider mb-3">Account</div>
               <ul className="space-y-2">
-                <li><a href="#story" className="hover:text-[#185cff] transition-colors">Conservation Equation</a></li>
-                <li><a href="#story" className="hover:text-[#185cff] transition-colors">Integer Minor Units</a></li>
-                <li><a href="#story" className="hover:text-[#185cff] transition-colors">Two-Party Handshake</a></li>
-                <li><a href="#story" className="hover:text-[#185cff] transition-colors">Currency Segregation</a></li>
-                <li><Link href="/admin/currencies" className="hover:text-[#185cff] transition-colors">Currency Manager</Link></li>
-              </ul>
-            </div>
-
-            {/* Developers & Legal */}
-            <div>
-              <div className="font-bold text-[#1a1a1a] uppercase tracking-wider mb-3">Developers</div>
-              <ul className="space-y-2">
-                <li><Link href="/api/health" className="hover:text-[#185cff] transition-colors">Health Endpoint</Link></li>
-                <li><Link href="/admin" className="hover:text-[#185cff] transition-colors">Admin Portal</Link></li>
-                <li><a href="https://github.com/Umar-444/hisabo" target="_blank" rel="noreferrer" className="hover:text-[#185cff] transition-colors">GitHub Repository</a></li>
                 <li><Link href="/login" className="hover:text-[#185cff] transition-colors">Sign In</Link></li>
-                <li><Link href="/register" className="hover:text-[#185cff] transition-colors">Register</Link></li>
+                <li><Link href="/register" className="hover:text-[#185cff] transition-colors">Create Free Account</Link></li>
+                <li><Link href="/reset-password" className="hover:text-[#185cff] transition-colors">Reset Password</Link></li>
+                <li><a href="#download" className="hover:text-[#185cff] transition-colors">Install App</a></li>
               </ul>
             </div>
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#787671]">
-            <div>© 2026 Hisabo Inc. Split easy. Settle smart. All rights reserved.</div>
+            <div>© 2026 Hisabo. Split easy. Settle smart. All rights reserved.</div>
             <div className="flex items-center gap-6">
-              <span>Next.js 16</span>
-              <span>React 19</span>
-              <span>Tailwind CSS v4</span>
-              <span>Neon PostgreSQL</span>
+              <span>Secure & Auditable</span>
+              <span>Zero Floating-Point Loss</span>
+              <span>Privacy First</span>
             </div>
           </div>
         </div>

@@ -209,3 +209,95 @@ export async function disputeExpenseAction(expenseId: string, reason: string) {
     return { success: false, error: err.message || "Failed to dispute expense" };
   }
 }
+
+export async function cancelExpenseAction(expenseId: string, reason?: string) {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Authentication required" };
+  }
+
+  try {
+    // 1. Fetch expense
+    const [expenseRecord] = await db
+      .select({
+        id: expenses.id,
+        groupId: expenses.groupId,
+        paidBy: expenses.paidBy,
+        description: expenses.description,
+        status: expenses.status,
+      })
+      .from(expenses)
+      .where(eq(expenses.id, expenseId));
+
+    if (!expenseRecord) {
+      return { success: false, error: "Expense not found" };
+    }
+
+    if (expenseRecord.status === "cancelled") {
+      return { success: false, error: "This expense is already cancelled" };
+    }
+
+    // 2. Verify caller is the payer OR a group owner/admin
+    const [callerMembership] = await db
+      .select({ role: groupMembers.role, status: groupMembers.status })
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, expenseRecord.groupId),
+          eq(groupMembers.userId, session.id),
+          eq(groupMembers.status, "active")
+        )
+      );
+
+    const isPayer = expenseRecord.paidBy === session.id;
+    const isGroupAdmin =
+      callerMembership && (callerMembership.role === "owner" || callerMembership.role === "admin");
+
+    if (!isPayer && !isGroupAdmin) {
+      return {
+        success: false,
+        error: "Only the person who paid this expense or a group admin can cancel it",
+      };
+    }
+
+    // 3. Update expense status to cancelled in transaction
+    await db.transaction(async (tx) => {
+      await tx
+        .update(expenses)
+        .set({ status: "cancelled", updatedAt: new Date() })
+        .where(eq(expenses.id, expenseId));
+
+      await tx
+        .update(expenseSplits)
+        .set({ decisionStatus: "cancelled" })
+        .where(eq(expenseSplits.expenseId, expenseId));
+
+      await tx.insert(expenseEvents).values({
+        expenseId,
+        actorId: session.id,
+        eventType: "cancelled",
+        details: { reason: reason || "Expense cancelled by payer/admin" },
+      });
+
+      await tx.insert(outboxEvents).values({
+        eventType: "expense.cancelled",
+        payload: { expenseId, cancelledBy: session.id, reason },
+      });
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/expenses");
+    revalidatePath(`/expenses/${expenseId}`);
+    revalidatePath("/balances");
+    revalidatePath(`/groups/${expenseRecord.groupId}`);
+
+    return {
+      success: true,
+      message: "Expense cancelled and excluded from active balances.",
+    };
+  } catch (err: any) {
+    console.error("Cancel expense failed:", err);
+    return { success: false, error: err.message || "Failed to cancel expense" };
+  }
+}
+
