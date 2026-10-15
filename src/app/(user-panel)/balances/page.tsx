@@ -1,6 +1,7 @@
 import { getUserSession } from "@/lib/auth/user-session";
 import { redirect } from "next/navigation";
 import { getAggregatedBalancesQuery } from "@/features/balances";
+import { getActivePaymentRequestsMapQuery } from "@/features/settlements";
 import { fromMinorUnits } from "@/lib/money";
 import Link from "next/link";
 import { ArrowLeft, HandCoins } from "lucide-react";
@@ -12,13 +13,32 @@ import { SerializedCurrencySummary } from "@/features/balances/components/dashbo
 
 export const dynamic = "force-dynamic";
 
-export default async function BalancesPage() {
+interface PageProps {
+  searchParams?: Promise<{
+    quickPay?: string;
+    payeeId?: string;
+    groupId?: string;
+    amount?: string;
+  }>;
+}
+
+export default async function BalancesPage({ searchParams }: PageProps) {
   const session = await getUserSession();
   if (!session) {
     return null;
   }
 
-  const balances = await getAggregatedBalancesQuery(session.id);
+  const resolvedParams = searchParams ? await searchParams : {};
+  const [balances, activeRequests] = await Promise.all([
+    getAggregatedBalancesQuery(session.id),
+    getActivePaymentRequestsMapQuery(session.id),
+  ]);
+
+  // Serialize activeRequests map
+  const serializedRequestsMap: Record<string, string> = {};
+  for (const [k, v] of Object.entries(activeRequests)) {
+    serializedRequestsMap[k] = v.toISOString();
+  }
 
   // Safely serialize byCurrency for Client Component
   const serializedByCurrency: Record<string, SerializedCurrencySummary> = {};
@@ -94,6 +114,8 @@ export default async function BalancesPage() {
         byCurrency={serializedByCurrency}
         initialCurrency={balances.currency}
         peerBalances={serializedPeers}
+        activeRequestsMap={serializedRequestsMap}
+        initialQuickPay={resolvedParams.quickPay === "true" ? resolvedParams : undefined}
       />
     </div>
   );

@@ -9,11 +9,12 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx tests/financial-invariants.test.ts",
+    "test": "tsx tests/financial-invariants.test.ts && tsx tests/payment-requests-and-quick-pay.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
+    "db:apply": "tsx scripts/apply-migration.ts",
     "db:seed": "npx tsx src/app/(backend)/_lib/db/seed.ts"
   },
   "dependencies": {
@@ -34,6 +35,7 @@
     "react-hook-form": "^7.90.0",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
+    "web-push": "^3.6.7",
     "zod": "^4.6.6"
   },
   "devDependencies": {
@@ -44,6 +46,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "dotenv": "^18.0.7",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",

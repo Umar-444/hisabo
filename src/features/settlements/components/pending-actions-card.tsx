@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { RejectClaimModal } from "./reject-claim-modal";
 
 export interface SerializedPendingAction {
   id: string;
@@ -44,8 +45,7 @@ export function PendingActionsCard({
   disputes = [],
 }: PendingActionsCardProps) {
   const [pendingList, setPendingList] = useState<SerializedPendingAction[]>(initialPending);
-  const [activeDisputeId, setActiveDisputeId] = useState<string | null>(null);
-  const [disputeReason, setDisputeReason] = useState("");
+  const [rejectingSettlement, setRejectingSettlement] = useState<SerializedPendingAction | null>(null);
   const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -59,27 +59,6 @@ export function PendingActionsCard({
         setPendingList((prev) => prev.filter((item) => item.id !== settlementId));
       } else {
         toast.error(res.error || "Failed to confirm payment");
-      }
-    });
-  };
-
-  const handleDisputeSubmit = (settlementId: string) => {
-    if (!disputeReason.trim()) {
-      toast.error("Please provide a reason for disputing this payment");
-      return;
-    }
-
-    setActionInProgressId(settlementId);
-    startTransition(async () => {
-      const res = await disputeSettlementAction(settlementId, disputeReason.trim());
-      setActionInProgressId(null);
-      setActiveDisputeId(null);
-      setDisputeReason("");
-      if (res.success) {
-        toast.info(res.message || "Settlement marked as disputed");
-        setPendingList((prev) => prev.filter((item) => item.id !== settlementId));
-      } else {
-        toast.error(res.error || "Failed to dispute settlement");
       }
     });
   };
@@ -127,7 +106,6 @@ export function PendingActionsCard({
       <div className="space-y-2">
         {pendingList.map((st) => {
           const isActing = actionInProgressId === st.id && isPending;
-          const isDisputingThis = activeDisputeId === st.id;
 
           return (
             <div
@@ -170,73 +148,31 @@ export function PendingActionsCard({
                 </div>
               </div>
 
-              {/* Inline Dispute Reason Form */}
-              {isDisputingThis ? (
-                <div className="pt-2 border-t border-[#ede9e4] space-y-2">
-                  <label className="text-[11px] font-bold text-[#787671] uppercase tracking-wider">
-                    Reason for disputing this payment claim
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    autoFocus
-                    placeholder="e.g. Did not receive transfer in bank, wrong amount..."
-                    value={disputeReason}
-                    onChange={(e) => setDisputeReason(e.target.value)}
-                    className="w-full rounded-md border border-red-300 bg-red-50/40 px-3 py-1.5 text-xs text-[#1a1a1a] focus:outline-none focus:ring-1 focus:ring-red-400"
-                  />
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveDisputeId(null);
-                        setDisputeReason("");
-                      }}
-                      className="px-2.5 py-1 rounded-md text-xs font-medium text-[#787671] hover:bg-[#f6f5f4] cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isActing || !disputeReason.trim()}
-                      onClick={() => handleDisputeSubmit(st.id)}
-                      className="px-3 py-1 rounded-md bg-[#EF4444] text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-                    >
-                      {isActing ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
-                      <span>Submit Dispute</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Primary Decision Buttons */
-                <div className="flex items-center justify-between pt-1 border-t border-[#ede9e4] gap-2">
-                  <button
-                    type="button"
-                    disabled={isActing}
-                    onClick={() => {
-                      setActiveDisputeId(st.id);
-                      setDisputeReason("");
-                    }}
-                    className="px-2.5 py-1 rounded-md border border-[#c8c4be] text-xs font-medium text-[#787671] hover:text-[#EF4444] hover:border-red-300 hover:bg-red-50/30 transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    Dispute claim
-                  </button>
+              {/* Primary Decision Buttons */}
+              <div className="flex items-center justify-between pt-2 border-t border-[#ede9e4] gap-2">
+                <button
+                  type="button"
+                  disabled={isActing}
+                  onClick={() => setRejectingSettlement(st)}
+                  className="px-2.5 py-1 rounded-md border border-[#c8c4be] text-xs font-medium text-[#787671] hover:text-[#EF4444] hover:border-red-300 hover:bg-red-50/30 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Reject claim
+                </button>
 
-                  <button
-                    type="button"
-                    disabled={isActing}
-                    onClick={() => handleConfirm(st.id)}
-                    className="px-3.5 py-1 rounded-md bg-[#10B981] hover:bg-emerald-600 text-white text-xs font-semibold shadow-2xs transition-all flex items-center gap-1.5 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-                  >
-                    {isActing ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <Check className="h-3 w-3 stroke-[2.5]" />
-                    )}
-                    <span>Confirm Receipt</span>
-                  </button>
-                </div>
-              )}
+                <button
+                  type="button"
+                  disabled={isActing}
+                  onClick={() => handleConfirm(st.id)}
+                  className="px-3.5 py-1 rounded-md bg-[#10B981] hover:bg-emerald-600 text-white text-xs font-semibold shadow-2xs transition-all flex items-center gap-1.5 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                >
+                  {isActing ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Check className="h-3 w-3 stroke-[2.5]" />
+                  )}
+                  <span>Confirm Receipt</span>
+                </button>
+              </div>
             </div>
           );
         })}
@@ -262,6 +198,21 @@ export function PendingActionsCard({
           </div>
         ))}
       </div>
+
+      {rejectingSettlement && (
+        <RejectClaimModal
+          isOpen={true}
+          onClose={() => setRejectingSettlement(null)}
+          settlementId={rejectingSettlement.id}
+          payerName={rejectingSettlement.payerName}
+          amount={rejectingSettlement.amountMajor}
+          currency={rejectingSettlement.currency}
+          onSuccess={() => {
+            setPendingList((prev) => prev.filter((item) => item.id !== rejectingSettlement.id));
+            setRejectingSettlement(null);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { SettleUpModalClient } from "./settle-up-modal";
 import { SerializedCurrencySummary } from "./dashboard-balance-hero";
+import { PaymentRequestButton, QuickPaySheet } from "@/features/settlements";
 
 export interface SerializedPeerBalance {
   peerId: string;
@@ -31,6 +32,12 @@ interface BalancesViewClientProps {
   byCurrency: Record<string, SerializedCurrencySummary>;
   initialCurrency: string;
   peerBalances: SerializedPeerBalance[];
+  activeRequestsMap?: Record<string, string>;
+  initialQuickPay?: {
+    payeeId?: string;
+    groupId?: string;
+    amount?: string;
+  };
 }
 
 const CURRENCY_SYMBOLS: Record<string, { symbol: string; label: string; flag?: string }> = {
@@ -50,11 +57,33 @@ export function BalancesViewClient({
   byCurrency,
   initialCurrency,
   peerBalances,
+  activeRequestsMap = {},
+  initialQuickPay,
 }: BalancesViewClientProps) {
   const [selectedCurrency, setSelectedCurrency] = useState<string>(
     currencies.includes(initialCurrency) ? initialCurrency : currencies[0] || "SAR"
   );
   const [peerFilterCurrency, setPeerFilterCurrency] = useState<string>("ALL");
+
+  const [quickPayTarget, setQuickPayTarget] = useState<SerializedPeerBalance | null>(() => {
+    if (initialQuickPay?.payeeId && initialQuickPay?.groupId) {
+      const match = peerBalances.find(
+        (p) => p.peerId === initialQuickPay.payeeId && p.groupId === initialQuickPay.groupId
+      );
+      if (match) return match;
+      return {
+        peerId: initialQuickPay.payeeId,
+        peerName: "Member",
+        peerUsername: "user",
+        groupId: initialQuickPay.groupId,
+        groupName: "Group",
+        currency: "SAR",
+        netMajor: -(parseFloat(initialQuickPay.amount || "0") || 0),
+        isOwedToUser: false,
+      };
+    }
+    return null;
+  });
 
   const currentSummary = byCurrency[selectedCurrency] || {
     currency: selectedCurrency,
@@ -311,16 +340,35 @@ export function BalancesViewClient({
                       </div>
                     </div>
 
-                    {/* Settle Up Action Button */}
-                    {!peerOwesUser && (
-                      <SettleUpModalClient
-                        peerId={peer.peerId}
-                        peerName={peer.peerName}
-                        peerPaymentHandle={peer.paymentHandle}
+                    {/* Action Buttons: Pay (if you owe) / Request (if owed) */}
+                    {peerOwesUser ? (
+                      <PaymentRequestButton
                         groupId={peer.groupId}
-                        suggestedAmount={Math.abs(peer.netMajor)}
+                        debtorId={peer.peerId}
+                        debtorName={peer.peerName}
+                        amount={peer.netMajor}
                         currency={peer.currency}
+                        lastRequestedAt={activeRequestsMap?.[`${peer.groupId}:${peer.peerId}`]}
+                        size="sm"
                       />
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setQuickPayTarget(peer)}
+                          className="px-2.5 py-1 rounded-lg bg-[#185CFF] text-white text-xs font-bold hover:bg-[#1249D6] transition-colors shadow-2xs cursor-pointer active:scale-95"
+                        >
+                          Quick Pay
+                        </button>
+                        <SettleUpModalClient
+                          peerId={peer.peerId}
+                          peerName={peer.peerName}
+                          peerPaymentHandle={peer.paymentHandle}
+                          groupId={peer.groupId}
+                          suggestedAmount={Math.abs(peer.netMajor)}
+                          currency={peer.currency}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -329,6 +377,20 @@ export function BalancesViewClient({
           </div>
         )}
       </div>
+
+      {quickPayTarget && (
+        <QuickPaySheet
+          isOpen={true}
+          onClose={() => setQuickPayTarget(null)}
+          groupId={quickPayTarget.groupId}
+          groupName={quickPayTarget.groupName}
+          payeeId={quickPayTarget.peerId}
+          payeeName={quickPayTarget.peerName}
+          outstandingAmount={Math.abs(quickPayTarget.netMajor)}
+          currency={quickPayTarget.currency}
+          onSuccess={() => setQuickPayTarget(null)}
+        />
+      )}
     </div>
   );
 }

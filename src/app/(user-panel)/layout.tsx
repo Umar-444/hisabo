@@ -6,6 +6,8 @@ import { DesktopUserShell } from "@/components/layout/desktop-user-shell";
 import { getSystemSettingsAction, SystemAnnouncement } from "@/features/admin/actions";
 import { GlobalAnnouncementBanner } from "@/components/layout/global-announcement-banner";
 
+import { getUnreadNotificationsCountQuery } from "@/features/notifications";
+
 export const dynamic = "force-dynamic";
 
 export default async function UserPanelLayout({
@@ -20,13 +22,16 @@ export default async function UserPanelLayout({
   }
 
   let pendingActionsCount = 0;
+  let unreadNotificationsCount = 0;
   let announcement: SystemAnnouncement = { active: false, message: "", type: "info" };
   try {
-    const [pendingActions, settings] = await Promise.all([
+    const [pendingActions, unreadCount, settings] = await Promise.all([
       getPendingActionsQuery(session.id),
+      getUnreadNotificationsCountQuery(session.id),
       getSystemSettingsAction(),
     ]);
     pendingActionsCount = pendingActions.totalCount;
+    unreadNotificationsCount = unreadCount;
     announcement = settings.announcement;
   } catch (err) {
     console.error("Failed to load user layout data:", err);
@@ -38,6 +43,7 @@ export default async function UserPanelLayout({
       <DesktopUserShell
         session={session}
         pendingActionsCount={pendingActionsCount}
+        unreadNotificationsCount={unreadNotificationsCount}
         logoutAction={logoutAction}
       >
         {children}
