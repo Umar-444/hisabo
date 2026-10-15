@@ -126,8 +126,18 @@ export function NewExpenseClientForm({
       return;
     }
 
+    if (parsedAmount > 10000000) {
+      setErrorMsg("Amount cannot exceed 10,000,000 (ten million)");
+      return;
+    }
+
     if (!description.trim()) {
       setErrorMsg("Please enter an expense description");
+      return;
+    }
+
+    if (description.trim().length > 140) {
+      setErrorMsg("Description cannot exceed 140 characters");
       return;
     }
 
@@ -224,6 +234,7 @@ export function NewExpenseClientForm({
           <input
             type="text"
             required
+            maxLength={140}
             placeholder="e.g., Al-Saddiq Supermarket, Dinner at Al-Baik"
             value={description}
             onChange={(e) => setDescription(e.target.value)}

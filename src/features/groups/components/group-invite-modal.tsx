@@ -39,13 +39,16 @@ interface GroupInviteModalProps {
   groupId: string;
   groupName: string;
   existingInvites?: ExistingInvite[];
+  userRole?: string;
 }
 
 export function GroupInviteModalClient({
   groupId,
   groupName,
   existingInvites: initialInvites = [],
+  userRole = "member",
 }: GroupInviteModalProps) {
+  const isAdmin = userRole === "owner" || userRole === "admin";
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"username" | "link">("username");
   const [identifier, setIdentifier] = useState("");
@@ -232,6 +235,16 @@ export function GroupInviteModalClient({
                   </div>
                 )}
 
+                {!isAdmin && (
+                  <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
+                    <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold">Admin Permission Required</span>
+                      <p className="mt-0.5 text-slate-600">Only group owners and admins can add flatmates directly. Please ask an admin to add new members.</p>
+                    </div>
+                  </div>
+                )}
+
                 <form onSubmit={handleDirectInvite} className="space-y-3.5">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -244,17 +257,18 @@ export function GroupInviteModalClient({
                       <input
                         type="text"
                         required
+                        disabled={!isAdmin}
                         placeholder="e.g. khalid_99 or ahmed@example.com"
                         value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#185CFF]/20 focus:border-[#185CFF] transition-all"
+                        className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#185CFF]/20 focus:border-[#185CFF] transition-all disabled:bg-slate-100 disabled:opacity-60"
                       />
                     </div>
                   </div>
 
                   <button
                     type="submit"
-                    disabled={isDirectPending || !identifier.trim()}
+                    disabled={!isAdmin || isDirectPending || !identifier.trim()}
                     className="w-full h-11 rounded-xl bg-[#185CFF] hover:bg-[#1249D6] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-[#185CFF]/20 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {isDirectPending ? (
@@ -280,8 +294,17 @@ export function GroupInviteModalClient({
             {/* TAB 2: Cryptographic Shareable Link */}
             {activeTab === "link" && (
               <div className="space-y-4 animate-in fade-in duration-150">
-                {/* Generated Active Link Banner */}
-                {activeToken ? (
+                {!isAdmin ? (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
+                      <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                      <span>Admin Permission Required</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Only group owners and admins can generate or manage invitation links for <strong>{groupName}</strong>. If you need to invite a flatmate, please ask the group owner.
+                    </p>
+                  </div>
+                ) : activeToken ? (
                   <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50/60 p-4 space-y-3">
                     <div className="flex items-center justify-between text-xs font-bold text-emerald-800">
                       <span className="flex items-center gap-1.5">
@@ -438,14 +461,16 @@ export function GroupInviteModalClient({
                             >
                               <Copy className="h-3.5 w-3.5" />
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => handleRevoke(inv.id)}
-                              className="p-1 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
-                              title="Revoke link"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                onClick={() => handleRevoke(inv.id)}
+                                className="p-1 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+                                title="Revoke link"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                           </>
                         )}
                       </div>

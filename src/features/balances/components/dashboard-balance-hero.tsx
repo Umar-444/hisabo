@@ -190,6 +190,7 @@ export function DashboardBalanceHero({
           <div className="mt-5 flex items-center gap-2.5">
             <Link
               href="/expenses/new"
+              prefetch={false}
               className="flex-1 h-10 rounded-lg bg-white text-[#185CFF] hover:bg-white/95 font-semibold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-[0.98]"
             >
               <PlusCircle className="h-3.5 w-3.5 text-[#185CFF]" />
@@ -197,6 +198,7 @@ export function DashboardBalanceHero({
             </Link>
             <Link
               href="/balances"
+              prefetch={false}
               className="flex-1 h-10 rounded-lg bg-white/15 text-white hover:bg-white/20 font-semibold text-xs flex items-center justify-center gap-2 border border-white/20 backdrop-blur-md transition-all active:scale-[0.98]"
             >
               <HandCoins className="h-3.5 w-3.5 text-white" />

@@ -327,9 +327,9 @@ export function SettingsClientView({ user }: Props) {
               <label className={ui.label}>Email Address</label>
               <div className="flex items-center justify-between rounded-lg border border-[#e5e3df] bg-[#f6f5f4] px-3.5 py-2.5 text-xs text-[#787671]">
                 <span className="font-mono text-slate-800">{user.email}</span>
-                <span className="inline-flex items-center gap-1 rounded-md bg-[#d9f3e1] px-2 py-0.5 text-[10px] font-bold text-[#0f5132] border border-[#b8e8c6]">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Verified
+                <span className="inline-flex items-center gap-1 rounded-md bg-slate-200/70 px-2 py-0.5 text-[10px] font-bold text-slate-700 border border-slate-300">
+                  <CheckCircle2 className="h-3 w-3 text-[#185CFF]" />
+                  Primary Account
                 </span>
               </div>
               <p className="text-[10px] text-[#787671] mt-1">
@@ -662,6 +662,7 @@ export function SettingsClientView({ user }: Props) {
                 <input
                   type="password"
                   required
+                  autoComplete="current-password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className={ui.input}
@@ -674,6 +675,7 @@ export function SettingsClientView({ user }: Props) {
                   type="password"
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className={ui.input}
@@ -686,6 +688,7 @@ export function SettingsClientView({ user }: Props) {
                   type="password"
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className={ui.input}

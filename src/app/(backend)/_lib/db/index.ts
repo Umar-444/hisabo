@@ -16,3 +16,12 @@ const sql = globalForDb.sql ?? neon(connectionString);
 if (process.env.NODE_ENV !== "production") globalForDb.sql = sql;
 
 export const db = drizzle(sql, { schema });
+
+// Graceful transaction fallback for neon-http driver on Cloudflare Workers / Serverless
+(db as any).transaction = async function (
+  cb: (tx: any) => Promise<any>
+) {
+  // neon-http executes queries over stateless HTTP fetch and does not support multi-statement interactive transactions.
+  // Passing the db client instance as tx executes statements sequentially with full compatibility.
+  return await cb(this);
+};

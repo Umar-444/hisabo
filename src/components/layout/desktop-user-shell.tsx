@@ -96,6 +96,7 @@ export function DesktopUserShell({
           {isSidebarOpen ? (
             <Link
               href="/expenses/new"
+              prefetch={false}
               className="w-full flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg bg-[#185CFF] text-white text-xs font-bold hover:bg-[#1249D6] transition-colors shadow-2xs"
             >
               <PlusCircle className="h-3.5 w-3.5" />
@@ -104,6 +105,7 @@ export function DesktopUserShell({
           ) : (
             <Link
               href="/expenses/new"
+              prefetch={false}
               title="Add Expense"
               className="w-10 h-10 mx-auto flex items-center justify-center rounded-lg bg-[#185CFF] text-white hover:bg-[#1249D6] transition-colors shadow-2xs"
             >
@@ -242,6 +244,7 @@ export function DesktopUserShell({
             {/* Quick Add Expense Link */}
             <Link
               href="/expenses/new"
+              prefetch={false}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-[#185CFF] text-white hover:bg-[#1249D6] transition-colors shadow-2xs cursor-pointer"
             >
               <PlusCircle className="h-3.5 w-3.5" />
@@ -328,23 +331,23 @@ export function DesktopUserShell({
         {/* MOBILE BOTTOM TAB BAR (Preserved EXACTLY as before for mobile screens)*/}
         {/* --------------------------------------------------------------------- */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 px-4 py-2 flex justify-around text-[10px] font-semibold text-slate-600">
-          <Link href="/dashboard" className="flex flex-col items-center gap-1 py-1">
+          <Link href="/dashboard" prefetch={false} className="flex flex-col items-center gap-1 py-1">
             <LayoutDashboard className="h-4 w-4" />
             Home
           </Link>
-          <Link href="/groups" className="flex flex-col items-center gap-1 py-1">
+          <Link href="/groups" prefetch={false} className="flex flex-col items-center gap-1 py-1">
             <Building2 className="h-4 w-4" />
             Groups
           </Link>
-          <Link href="/expenses/new" className="flex flex-col items-center gap-1 py-1 text-[#185CFF]">
+          <Link href="/expenses/new" prefetch={false} className="flex flex-col items-center gap-1 py-1 text-[#185CFF]">
             <PlusCircle className="h-4 w-4" />
             Add
           </Link>
-          <Link href="/balances" className="flex flex-col items-center gap-1 py-1">
+          <Link href="/balances" prefetch={false} className="flex flex-col items-center gap-1 py-1">
             <Scale className="h-4 w-4" />
             Balances
           </Link>
-          <Link href="/settlements" className="flex flex-col items-center gap-1 py-1 relative">
+          <Link href="/settlements" prefetch={false} className="flex flex-col items-center gap-1 py-1 relative">
             <HandCoins className="h-4 w-4" />
             <span>Settling</span>
             {pendingActionsCount > 0 && (

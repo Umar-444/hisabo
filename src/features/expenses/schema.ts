@@ -7,8 +7,8 @@ export const splitShareItemSchema = z.object({
 
 export const createExpenseSchema = z.object({
   groupId: z.string().uuid("Please select a group"),
-  description: z.string().min(2, "Description must be at least 2 characters").max(200),
-  amount: z.number().positive("Amount must be greater than 0"),
+  description: z.string().min(2, "Description must be at least 2 characters").max(140, "Description must not exceed 140 characters").trim(),
+  amount: z.number().positive("Amount must be greater than 0").max(10000000, "Amount cannot exceed 10,000,000"),
   currency: z.string().length(3).default("SAR"),
   category: z.enum([
     "food",

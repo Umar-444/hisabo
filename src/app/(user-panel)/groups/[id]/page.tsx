@@ -80,6 +80,7 @@ export default async function GroupDetailPage({
           groupId={group.id}
           groupName={group.name}
           existingInvites={existingInvites}
+          userRole={group.currentUserRole}
         />
       </div>
 
@@ -149,6 +150,7 @@ export default async function GroupDetailPage({
           <div className="mt-4 flex items-center gap-3">
             <Link
               href={`/expenses/new?groupId=${group.id}`}
+              prefetch={false}
               className="flex-1 h-9 rounded-xl bg-white text-[#185CFF] font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-[0.98]"
             >
               <PlusCircle className="h-3.5 w-3.5" />
@@ -156,6 +158,7 @@ export default async function GroupDetailPage({
             </Link>
             <Link
               href="/balances"
+              prefetch={false}
               className="flex-1 h-9 rounded-xl bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 backdrop-blur-xs transition-all active:scale-[0.98]"
             >
               <HandCoins className="h-3.5 w-3.5" />
@@ -176,6 +179,7 @@ export default async function GroupDetailPage({
             groupId={group.id}
             groupName={group.name}
             existingInvites={existingInvites}
+            userRole={group.currentUserRole}
           />
         </div>
 
@@ -285,7 +289,9 @@ export default async function GroupDetailPage({
       <GroupGovernanceCard
         groupId={group.id}
         groupName={group.name}
+        groupDescription={group.description}
         isOwner={group.currentUserRole === "owner"}
+        userRole={group.currentUserRole}
         status={(group as any).status || "active"}
         userNetBalanceMinor={group.userNetBalanceMinor.toString()}
         currency={group.defaultCurrency}

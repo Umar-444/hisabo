@@ -22,6 +22,7 @@ import {
   Globe,
   SlidersHorizontal,
   Users,
+  LayoutDashboard,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -166,7 +167,7 @@ export default function HomePage() {
                 href="#features"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white transition-all hover:bg-white/10"
               >
-                Explore Live Demo
+                Explore Features
               </a>
             </div>
           </div>
@@ -323,8 +324,8 @@ export default function HomePage() {
                 {/* Bottom Navigation Mock Bar */}
                 <div className="flex items-center justify-around border-t border-slate-200/80 bg-white py-2 text-[9px] font-bold text-slate-500">
                   <div className="text-[#185cff] flex flex-col items-center">
-                    <Layers className="h-4 w-4" />
-                    <span>Ledger</span>
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>Dashboard</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <Users className="h-4 w-4" />
@@ -589,8 +590,8 @@ export default function HomePage() {
                   href="/register"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md bg-[#185cff] px-6 py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#1249d6] active:scale-95"
                 >
-                  <Download className="h-4 w-4" />
-                  Install Web App Free
+                  <ArrowRight className="h-4 w-4" />
+                  Get Started Free
                 </Link>
                 <Link
                   href="/dashboard"

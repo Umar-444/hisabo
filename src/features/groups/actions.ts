@@ -86,8 +86,8 @@ export async function inviteMemberAction(groupId: string, identifier: string) {
       .from(groupMembers)
       .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, session.id), eq(groupMembers.status, "active")));
 
-    if (!membership) {
-      return { success: false, error: "You are not authorized to invite members to this group" };
+    if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
+      return { success: false, error: "Only group owners and admins can invite members to this group" };
     }
 
     // 2. Find target user by email or username
@@ -126,6 +126,23 @@ export async function inviteMemberAction(groupId: string, identifier: string) {
       status: "active",
     });
 
+    // Fetch group details for rich notification
+    const [groupRecord] = await db
+      .select({ name: groups.name })
+      .from(groups)
+      .where(eq(groups.id, groupId));
+
+    const groupTitle = groupRecord?.name || "Shared Group";
+
+    // Write in-app notification to the invited user
+    await db.insert(notifications).values({
+      userId: targetUser.id,
+      type: "group_invite",
+      title: `Added to ${groupTitle}`,
+      message: `${session.name || "A roommate"} added you to ${groupTitle}. You can now view and split expenses together.`,
+      link: `/groups/${groupId}`,
+    });
+
     // Write outbox event
     await db.insert(outboxEvents).values({
       eventType: "group.member_added",
@@ -133,6 +150,7 @@ export async function inviteMemberAction(groupId: string, identifier: string) {
         groupId,
         addedUserId: targetUser.id,
         addedByUserId: session.id,
+        groupName: groupTitle,
       },
     });
 
@@ -167,8 +185,8 @@ export async function createGroupInviteAction(
         )
       );
 
-    if (!membership) {
-      return { success: false, error: "You are not authorized to create invite links for this group" };
+    if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
+      return { success: false, error: "Only group owners and admins can generate invitation links" };
     }
 
     // 2. Generate cryptographically secure random token (48 hex chars = 24 bytes)
@@ -249,8 +267,8 @@ export async function revokeGroupInviteAction(inviteId: string) {
         )
       );
 
-    if (!membership) {
-      return { success: false, error: "Unauthorized to revoke this invite" };
+    if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
+      return { success: false, error: "Only group owners and admins can revoke invitation links" };
     }
 
     await db
@@ -356,6 +374,17 @@ export async function joinGroupByTokenAction(token: string) {
             inviteId: invitation.id,
           },
         });
+
+        // Notify the person who created the invite link
+        if (invitation.invitedBy !== session.id) {
+          await tx.insert(notifications).values({
+            userId: invitation.invitedBy,
+            type: "group_invite",
+            title: "New Flatmate Joined",
+            message: `${session.name || "A roommate"} accepted your invitation and joined the group.`,
+            link: `/groups/${invitation.groupId}`,
+          });
+        }
       });
     }
 
@@ -747,6 +776,58 @@ export async function transferGroupOwnershipAction({
     return { success: false, error: err.message || "Failed to transfer group ownership." };
   }
 }
+
+export async function updateGroupDetailsAction(
+  groupId: string,
+  data: { name: string; description?: string }
+) {
+  const session = await getUserSession();
+  if (!session) {
+    return { success: false, error: "Authentication required" };
+  }
+
+  const name = data.name?.trim();
+  if (!name || name.length < 2 || name.length > 100) {
+    return { success: false, error: "Group name must be between 2 and 100 characters." };
+  }
+
+  try {
+    // Verify caller is an active group owner or admin
+    const [membership] = await db
+      .select()
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, groupId),
+          eq(groupMembers.userId, session.id),
+          eq(groupMembers.status, "active")
+        )
+      );
+
+    if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
+      return { success: false, error: "Only group owners and admins can edit group details." };
+    }
+
+    await db
+      .update(groups)
+      .set({
+        name,
+        description: data.description?.trim() || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(groups.id, groupId));
+
+    revalidatePath("/groups");
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Group details updated successfully!" };
+  } catch (err: any) {
+    console.error("Update group details error:", err);
+    return { success: false, error: err.message || "Failed to update group details" };
+  }
+}
+
 
 
 
