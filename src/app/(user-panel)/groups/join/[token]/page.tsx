@@ -34,8 +34,8 @@ export default async function JoinGroupPage({
       title = "Invitation Revoked";
       desc = "This invitation link was revoked by the group administrator for security.";
     } else if (preview.reason === "max_reached") {
-      title = "Invite Limit Reached";
-      desc = "This was a single-use personal invite link that has already been claimed.";
+      title = "Invitation Already Used";
+      desc = "This single-use personal invite link has already been claimed.";
     }
 
     return (

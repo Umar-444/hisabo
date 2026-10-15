@@ -260,13 +260,15 @@ export async function getGroupInvitesListQuery(groupId: string, userId: string) 
     return [];
   }
 
-  // Check user is active member
+  // Check user is active owner or admin of the group
   const [membership] = await db
-    .select()
+    .select({ role: groupMembers.role })
     .from(groupMembers)
     .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId), eq(groupMembers.status, "active")));
 
-  if (!membership) return [];
+  if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
+    return [];
+  }
 
   const rows = await db
     .select({

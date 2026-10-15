@@ -58,7 +58,7 @@ export default async function BalancesPage() {
     groupId: peer.groupId,
     groupName: peer.groupName,
     currency: peer.currency,
-    netMajor: fromMinorUnits(peer.netMinor),
+    netMajor: Math.round(fromMinorUnits(peer.netMinor) * 100) / 100,
     isOwedToUser: peer.netMinor > BigInt(0),
   }));
 
