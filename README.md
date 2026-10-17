@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Hisabo
+# Hisabo
 
 ### *Split easy. Settle smart.*
 
@@ -35,8 +35,7 @@
 ### 🖥️ Desktop Experience — Complete Command Center
 *Real-time zero-sum position hero, peer debts breakdown, SettleSmart integrity strip, and recent ledger feed.*
 
-<img src="public/screenshots/dashboard-wide.png" alt="Hisabo Desktop Dashboard" width="95%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12);" />
-
+<img width="2400" height="1792" alt="Hisabo_software_launch_advertise…_2K_20261017085158" src="https://github.com/user-attachments/assets/f3514efb-8328-4c1f-9bc5-0683dc24329e" />
 <br/><br/>
 
 ### 📱 Mobile PWA & Flow Views
