@@ -20,7 +20,8 @@ const db = drizzle(sql, { schema });
 async function seed() {
   console.log("🌱 Starting Hisabo database seed...");
 
-  const passwordHash = await bcrypt.hash("Admin@Hisabo2026!", 10);
+  const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || "Admin@Hisabo2026!";
+  const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
   // 1. Seed Users
   await db
