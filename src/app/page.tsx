@@ -731,7 +731,18 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#787671]">
-            <div>© 2026 Hisabo. Split easy. Settle smart. All rights reserved.</div>
+            <div>
+              © 2026 Hisabo. Split easy. Settle smart. Built by{" "}
+              <a
+                href="https://itsumarfarooq.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-[#0a1530] hover:text-[#185cff] transition-colors underline underline-offset-2"
+              >
+                Umar Farooq
+              </a>
+              . All rights reserved.
+            </div>
             <div className="flex items-center gap-6">
               <span>Secure & Auditable</span>
               <span>Zero Floating-Point Loss</span>
