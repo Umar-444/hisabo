@@ -19,23 +19,7 @@
 [![PWA Ready](https://img.shields.io/badge/PWA-Installable-purple?style=for-the-badge&logo=pwa&logoColor=white)](public/manifest.webmanifest)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
 
-<br/>
 
-```
-      ___           ___           ___           ___           ___           ___     
-     /\__\         /\  \         /\  \         /\  \         /\  \         /\  \    
-    /:/  /        /::\  \       /::\  \       /::\  \       /::\  \       /::\  \   
-   /:/__/        /:/\:\  \     /:/\ \  \     /:/\:\  \     /:/\:\__\     /:/\:\  \  
-  /::\  \ ___   _\:\~\:\  \   _\:\~\ \  \   /::\~\:\  \   /:/ /:/  /    /:/  \:\  \ 
- /:/\:\  /\__\ /\ \:\ \:\__\ /\ \:\ \ \__\ /:/\:\ \:\__\ /:/_/:/__/___ /:/__/ \:\__\
- \/__\:\/:/  / \:\ \:\ \/__/ \:\ \:\ \/__/ \/__\:\/:/  / \:\/:::::/  / \:\  \ /:/  /
-      \::/  /   \:\ \:\__\    \:\ \:\__\        \::/  /   \::/~~/~~~~   \:\  /:/  / 
-      /:/  /     \:\/:/  /     \:\/:/  /        /:/  /     \:\~~\        \:\/:/  /  
-     /:/  /       \::/  /       \::/  /        /:/  /       \:\__\        \::/  /   
-     \/__/         \/__/         \/__/         \/__/         \/__/         \/__/    
-```
-
-<br/>
 
 > Crafted by **[Umar Farooq](https://itsumarfarooq.com)** — Senior Software & AI Engineer  
 > 🌐 [Website](https://itsumarfarooq.com) • 💼 [LinkedIn](https://www.linkedin.com/in/umar444) • 🐙 [GitHub](https://github.com/umar-444) • ✉️ [Contact](mailto:Umar@itsumarfarooq.com)
