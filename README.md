@@ -1,104 +1,203 @@
 <div align="center">
 
-# Hisabo ⚡
+# ⚡ Hisabo
 
-**Split easy. Settle smart.**
+### *Split easy. Settle smart.*
 
-A modern, high-precision shared-expense and balance-tracking platform built for roommates, travel groups, and shared households.
+**The auditable, zero-loss shared expense and settlement ledger for modern roommates, trips, and apartments.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Next.js 16](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org/)
-[![React 19](https://img.shields.io/badge/React-19.3-61dafb?logo=react)](https://react.dev/)
-[![TypeScript 5](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
-[![Neon Database](https://img.shields.io/badge/Database-Neon_Postgres-00e599?logo=postgresql)](https://neon.tech/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+<br/>
+
+[![GitHub Stars](https://img.shields.io/github/stars/umar-444/hisabo?style=for-the-badge&logo=github&color=185CFF&logoColor=white)](https://github.com/umar-444/hisabo/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/umar-444/hisabo?style=for-the-badge&logo=github&color=10B981&logoColor=white)](https://github.com/umar-444/hisabo/network/members)
+[![License: MIT](https://img.shields.io/badge/License-MIT-6366F1?style=for-the-badge)](LICENSE)
+[![Next.js 16](https://img.shields.io/badge/Next.js%2016-Turbopack-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React 19](https://img.shields.io/badge/React%2019-Server--First-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript 5](https://img.shields.io/badge/TypeScript%205-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind v4](https://img.shields.io/badge/Tailwind%20CSS-v4-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Neon Postgres](https://img.shields.io/badge/Neon-Serverless%20Postgres-00E599?style=for-the-badge&logo=postgresql&logoColor=black)](https://neon.tech/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Installable-purple?style=for-the-badge&logo=pwa&logoColor=white)](public/manifest.webmanifest)
+[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
+
+<br/>
+
+```
+      ___           ___           ___           ___           ___           ___     
+     /\__\         /\  \         /\  \         /\  \         /\  \         /\  \    
+    /:/  /        /::\  \       /::\  \       /::\  \       /::\  \       /::\  \   
+   /:/__/        /:/\:\  \     /:/\ \  \     /:/\:\  \     /:/\:\__\     /:/\:\  \  
+  /::\  \ ___   _\:\~\:\  \   _\:\~\ \  \   /::\~\:\  \   /:/ /:/  /    /:/  \:\  \ 
+ /:/\:\  /\__\ /\ \:\ \:\__\ /\ \:\ \ \__\ /:/\:\ \:\__\ /:/_/:/__/___ /:/__/ \:\__\
+ \/__\:\/:/  / \:\ \:\ \/__/ \:\ \:\ \/__/ \/__\:\/:/  / \:\/:::::/  / \:\  \ /:/  /
+      \::/  /   \:\ \:\__\    \:\ \:\__\        \::/  /   \::/~~/~~~~   \:\  /:/  / 
+      /:/  /     \:\/:/  /     \:\/:/  /        /:/  /     \:\~~\        \:\/:/  /  
+     /:/  /       \::/  /       \::/  /        /:/  /       \:\__\        \::/  /   
+     \/__/         \/__/         \/__/         \/__/         \/__/         \/__/    
+```
+
+<br/>
+
+> Crafted by **[Umar Farooq](https://itsumarfarooq.com)** — Senior Software & AI Engineer  
+> 🌐 [Website](https://itsumarfarooq.com) • 💼 [LinkedIn](https://www.linkedin.com/in/umar444) • 🐙 [GitHub](https://github.com/umar-444) • ✉️ [Contact](mailto:Umar@itsumarfarooq.com)
 
 </div>
 
 ---
 
-## 📖 Overview
+## 📸 Visual Showcase
 
-Hisabo records shared expenses, calculates fair splits, maintains a real-time zero-sum balance ledger, and verifies offline settlements through a secure two-party handshake.
+<div align="center">
 
-Most expense-splitting tools suffer from floating-point rounding errors and unilateral debt cancellation. Hisabo solves this by operating as an **auditable, zero-loss settlement ledger**:
-1. **Who paid?**
-2. **Who participated?**
-3. **How much does each person owe?**
-4. **Which expenses are disputed or unpaid?**
-5. **Who has confirmed their settlement?**
+### 🖥️ Desktop Experience — Complete Command Center
+*Real-time zero-sum position hero, peer debts breakdown, SettleSmart integrity strip, and recent ledger feed.*
 
-> **Note:** Hisabo is an auditable record & settlement ledger — it records offline payments (cash, bank transfer, UPI) and verifies claims between peers. It does NOT hold custodial deposits or act as a banking wallet.
+<img src="public/screenshots/dashboard-wide.png" alt="Hisabo Desktop Dashboard" width="95%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12);" />
 
----
+<br/><br/>
 
-## ✨ Key Features
+### 📱 Mobile PWA & Flow Views
+*Fully responsive, touch-optimized Progressive Web App with instant Quick Pay and currency isolation.*
 
-- 🎯 **Integer-Precision Financial Engine:** Every currency calculation uses integer minor units (`BIGINT` halalas or cents). Floating point numbers are strictly forbidden. Odd remainders are distributed deterministically ($\sum \text{shares} = \text{expense total}$).
-- 🤝 **Two-Party Settlement Handshake:** A debtor logs an offline payment claim $\rightarrow$ The creditor inspects and confirms receipt $\rightarrow$ Balances update **only upon confirmation**.
-- ⚡ **Quick Pay Flow & Downward-Only Cap:** Settle individual debts with one tap directly from Dashboard, Group, or Expense detail views. The claim amount is capped at outstanding liability.
-- 🛑 **Structured Claim Rejections:** Creditors can reject payment claims with structured reasons (`NOT_RECEIVED`, `WRONG_AMOUNT`, `WRONG_METHOD`, etc.) and optional notes, immediately freeing the pending claim lock for correction.
-- 🔔 **Web Push & Unread Badges:** Instant browser push alerts for payment requests and settlement updates, paired with numerical notification counters on top bars and sidebar nav.
-- 🌍 **Multi-Currency Segregation:** Balances are partitioned cleanly per currency (`SAR`, `USD`, `AED`) with interactive currency pickers—never summing across currencies without verified rates.
-- 🛡️ **Group Governance & Roles:** Apartments, trips, or flatmates with Owner, Admin, and Member roles, plus cryptographic, rate-limited invite links.
-- 📱 **Progressive Web App (PWA):** Mobile-first design built with Tailwind CSS v4, installable as a standalone PWA on Android, iOS, and desktop.
-- ⚙️ **Admin Portal:** Moderation dashboard, user management, audit logs, and dynamic system currency activation.
+| 📊 Mobile Dashboard | 💳 Currency Balances | 📝 Itemized Expenses |
+| :---: | :---: | :---: |
+| <img src="public/screenshots/dashboard-narrow.png" width="280" alt="Dashboard Mobile" /> | <img src="public/screenshots/balances-narrow.png" width="280" alt="Balances Screen" /> | <img src="public/screenshots/expenses-narrow.png" width="280" alt="Expenses Stream" /> |
+
+</div>
 
 ---
 
-## 🛠️ Tech Stack
+## 🎯 What is Hisabo?
 
-| Layer | Technology | Details |
+Most shared-expense apps suffer from **silent floating-point rounding errors**, chaotic currency mingling, and **unilateral debt cancellation** where anyone can claim they paid you without verification.
+
+**Hisabo** fixes shared finances by operating as an **auditable, zero-loss settlement ledger**:
+- 💎 **Integer Minor Units Only:** Stored as `BIGINT` halalas or cents. Float math is strictly banished.
+- 🤝 **Two-Party Settlement Handshake:** A debtor logs an offline payment claim $\rightarrow$ The creditor inspects and confirms receipt $\rightarrow$ **Balances only update upon creditor confirmation.**
+- ⚡ **Quick Pay with Downward-Only Debt Cap:** One-tap settlements pre-filled directly from the Dashboard, bounded strictly to what is owed.
+- 🛑 **Structured Claim Rejections:** Creditors can reject false or mismatched claims with explicit reasons (`NOT_RECEIVED`, `WRONG_AMOUNT`, `WRONG_METHOD`, etc.), freeing the pending lock for correction.
+- 🔔 **Web Push Alerts & Exact Badges:** Real-time push notifications and exact unread badges on the top bar and sidebar navigation.
+
+---
+
+## ⚖️ The SettleSmart Invariant Engine
+
+Hisabo is founded upon non-negotiable financial conservation invariants:
+
+### 1. Conservation Equation (Zero-Loss Splitting)
+Every split satisfies:
+
+$$\sum_{i=1}^{n} \text{Participant Share}_i = \text{Expense Total}$$
+
+```text
+Example: SAR 100.00 (10,000 halalas) split equally among 3 friends:
+- Quotient: 10,000 / 3 = 3,333 halalas each
+- Remainder: 10,000 - (3,333 * 3) = 1 halala
+- Allocation: Participant 1 = 3,334 halalas | Participant 2 = 3,333 | Participant 3 = 3,333
+- Invariant check: 3,334 + 3,333 + 3,333 == 10,000 halalas (100% exact, zero float loss)
+```
+
+### 2. Zero-Sum Balance Ledger
+For every recorded expense:
+- **Payer is credited:** $\text{Credit} = \text{Total Paid} - \text{Payer's Own Share}$
+- **Participants are debited:** $\text{Debit} = -(\text{Assigned Share})$
+- **Invariant:** $\sum \text{All Net Positions} = 0$
+
+### 3. Two-Party Handshake Workflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Debtor as 👤 Debtor (Owes Money)
+    participant Ledger as ⚡ Hisabo SettleSmart
+    actor Creditor as 👥 Creditor (Owed Money)
+
+    Debtor->>Ledger: Initiates Quick Pay (Cash / Bank Transfer)
+    Note over Ledger: Settlement created in PENDING state.<br/>Balances remain unchanged.<br/>Single pending claim lock active.
+    Ledger-->>Creditor: 🔔 Web Push Alert + Action Card Badge
+    alt Creditor Verifies & Confirms
+        Creditor->>Ledger: Confirms Receipt
+        Note over Ledger: Settlement marked CONFIRMED.<br/>Zero-sum ledger updates atomically!
+        Ledger-->>Debtor: 🔔 Debt Settled Notification
+    else Creditor Identifies Discrepancy
+        Creditor->>Ledger: Rejects with Structured Reason (e.g. WRONG_AMOUNT)
+        Note over Ledger: Settlement marked REJECTED.<br/>Balances untouched.<br/>Claim lock freed for debtor retry.
+        Ledger-->>Debtor: ⚠️ Rejection alert with explanation note
+    end
+```
+
+---
+
+## ✨ Full Feature Matrix
+
+| Feature | Description | Status |
+| :--- | :--- | :---: |
+| **Integer Minor-Unit Engine** | `BIGINT` integer halalas/cents. Zero floating point rounding drift. | ✅ Production |
+| **Two-Party Handshake** | Offline payment claim $\rightarrow$ Creditor confirmation $\rightarrow$ Ledger update. | ✅ Production |
+| **Quick Pay Sheet** | Instant settlement sheet accessible from Dashboard, Groups, and Expenses. | ✅ Production |
+| **24h Request Cooldown** | Creditors can request settlement with a 24-hour rate limit per debtor. | ✅ Production |
+| **Admin 'Remind All'** | Group Admins can nudge all debtors with outstanding balances in one tap. | ✅ Production |
+| **Multi-Currency Segregation** | Independent ledgers per currency (`SAR`, `USD`, `AED`) with live switcher. | ✅ Production |
+| **Web Push (VAPID)** | Transactional push notifications delivered straight to mobile and desktop browsers. | ✅ Production |
+| **Exact Unread Badges** | Visual numeric counter on header bell and left sidebar navigation. | ✅ Production |
+| **Group Roles & Invites** | Owner, Admin, Member permissions with expiring, tokenized invite links. | ✅ Production |
+| **Progressive Web App** | Service Worker offline shell, standalone manifest, and mobile splash screen. | ✅ Production |
+| **Admin Control Center** | Live platform metrics, user account status, audit logs, and currency controls. | ✅ Production |
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Choice | Details |
 | :--- | :--- | :--- |
-| **Framework** | Next.js 16 (App Router, Turbopack) | Server Components by default, Server Actions for mutations |
+| **Framework** | Next.js 16 (App Router) | Server Components default, Server Actions for writes, Turbopack |
 | **Runtime** | React 19 | Server-first model, `useActionState` |
-| **Language** | TypeScript 5 | Strict mode, zero unchecked `any` |
-| **Styling** | Tailwind CSS v4 | CSS-first `@theme` in `globals.css` |
-| **Database** | PostgreSQL (Neon Serverless) | ACID transactions, `BIGINT` minor units |
-| **ORM** | Drizzle ORM & `drizzle-kit` | Typed migrations and schema inference |
-| **Auth** | Auth.js v5 (NextAuth) | JWT session strategy in secure `httpOnly` cookies |
-| **Validation** | Zod | Single source of truth for schemas & forms |
+| **Language** | TypeScript 5 | Strict mode (`strict: true`), 100% type-safe schemas |
+| **Styling** | Tailwind CSS v4 | CSS-first `@theme` design tokens in `globals.css` |
+| **Database** | PostgreSQL (Neon Serverless) | ACID transactions, pooled runtime, unpooled migrations |
+| **ORM** | Drizzle ORM | Type-safe migrations, zero-overhead relational queries |
+| **Validation** | Zod | Single source of truth for all schemas and forms |
+| **Auth** | Auth.js v5 (NextAuth) | JWT session strategy stored strictly in `httpOnly` secure cookies |
 | **Push** | Web Push (VAPID) | Background worker and push notifications |
+| **Testing** | Tsx & Custom Test Runner | Automated tests for financial invariants and settlement flows |
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start Guide
 
 ### 1. Prerequisites
 - **Node.js:** v20.x or higher
 - **npm:** v10.x or higher
-- A **PostgreSQL** database (e.g., free tier on [Neon](https://neon.tech) or local Postgres)
+- A **PostgreSQL** database (e.g. free tier on [Neon](https://neon.tech) or local Postgres)
 
-### 2. Clone the Repository
+### 2. Clone & Install
 ```bash
-git clone https://github.com/Umar-444/hisabo.git
+git clone https://github.com/umar-444/hisabo.git
 cd hisabo
 npm install
 ```
 
-### 3. Set Up Environment Variables
-Create your local environment file:
+### 3. Environment Configuration
+Copy the template configuration:
 ```bash
 cp .env.example .env.local
 ```
-Fill in the database and authentication secrets in `.env.local`:
+Configure your database credentials in `.env.local`:
 ```env
-# Database (Neon PostgreSQL)
-DATABASE_URL="postgresql://user:password@ep-host-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
-DATABASE_URL_UNPOOLED="postgresql://user:password@ep-host.us-east-2.aws.neon.tech/neondb?sslmode=require"
+# PostgreSQL Database (Neon Serverless)
+DATABASE_URL="postgresql://user:password@ep-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL_UNPOOLED="postgresql://user:password@ep-direct.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
 # Auth.js v5 Secret
-AUTH_SECRET="your-generated-32-byte-secret"
+AUTH_SECRET="generate-a-random-32-byte-secret"
 AUTH_URL="http://localhost:3000"
 
-# Optional Initial Admin Password
+# Initial Admin Credentials (Optional)
 ADMIN_DEFAULT_PASSWORD="Admin@Hisabo2026!"
 ```
 
-### 4. Apply Database Migrations & Seed
+### 4. Database Migration & Seed
 ```bash
-# Apply schema tables and constraints to your database
+# Apply schema tables and relational constraints to PostgreSQL
 npm run db:apply
 
 # (Optional) Seed demo users, default currencies, and sample groups
@@ -109,19 +208,19 @@ npm run db:seed
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Visit [http://localhost:3000](http://localhost:3000) to view Hisabo in action.
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing & Verification
 
-Hisabo maintains strict unit tests for its financial engine and settlement state transitions:
+Hisabo maintains automated test suites to ensure 100% mathematical accuracy and strict settlement state transitions:
 
 ```bash
-# Run financial invariant & quick pay test suites
+# Run financial invariant & quick-pay test suites
 npm test
 
-# Run strict TypeScript compiler verification
+# Run strict TypeScript compiler verification (0 errors required)
 npx tsc --noEmit
 
 # Run ESLint
@@ -135,55 +234,105 @@ npm run lint
 ```text
 src/
 ├── app/
-│   ├── (marketing-site)/    # Public pages: Landing (/), Features, How it Works
-│   ├── (auth-pages)/        # Authentication: /login, /register, /reset-password
-│   ├── (user-panel)/        # Protected user application:
+│   ├── (marketing-site)/    # Public landing pages (/), features, how-it-works
+│   ├── (auth-pages)/        # Authentication (/login, /register, /reset-password)
+│   ├── (user-panel)/        # Core user application:
 │   │   ├── dashboard/       # Net balances, peer debts widget, quick actions
-│   │   ├── groups/          # Group detail, member roles, invite link generator
-│   │   ├── expenses/        # Split engine, expense detail, dispute flow
+│   │   ├── groups/          # Group ledgers, member roles, invite link generator
+│   │   ├── expenses/        # Split engine, itemized expense details, disputes
 │   │   ├── balances/        # Who owes whom, currency filter, quick pay sheet
 │   │   ├── settlements/     # Offline payments claim & verification workflow
 │   │   └── notifications/   # In-app notifications feed & push triggers
-│   ├── (admin-panel)/       # Admin dashboard: users, groups, audit logs, currencies
+│   ├── (admin-panel)/       # Admin portal: metrics, user status, currencies, audit logs
 │   └── (backend)/           # Server-only backend:
 │       └── _lib/db/         # Drizzle schema, DB client, migration scripts
 ├── features/                # Modular domain modules (Fixed shape):
-│   ├── auth/                # Authentication logic, credentials & session queries
-│   ├── groups/              # Group CRUD, member governance & invites
-│   ├── expenses/            # Integer split engine, categories & disputes
-│   ├── balances/            # Real-time zero-sum position queries
+│   ├── auth/                # Auth credentials, password hashing, session guards
+│   ├── groups/              # Group CRUD, role permissions, cryptographic invites
+│   ├── expenses/            # Integer split engine, categories, soft-disputes
+│   ├── balances/            # Real-time zero-sum position calculations
 │   ├── settlements/         # Quick pay, 24h request rate limits, claim rejection
 │   ├── notifications/       # Internal notifications & web push dispatcher
 │   └── admin/               # Privileged metric queries and audit logging
 ├── components/
-│   ├── ui/                  # Accessible behavioral primitives (Modal, Drawer, Tabs)
+│   ├── ui/                  # Accessible primitives (Modal, Drawer, Tabs)
 │   └── layout/              # Shells: DesktopUserShell, UserSidebarNav, PwaPrompt
 └── lib/
-    ├── money.ts             # Integer minor-unit math, roundings, SAR/USD formatters
+    ├── money.ts             # Integer minor-unit math, roundings, currency formatters
     ├── ui.ts                # Master Tailwind class recipes & design system tokens
     └── utils.ts             # Class merging helper (cn)
 ```
 
 ---
 
+## 👨‍💻 Meet the Author
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://itsumarfarooq.com">
+        <img src="https://github.com/umar-444.png" width="130px;" alt="Umar Farooq" style="border-radius: 50%; border: 3px solid #185CFF;"/>
+      </a>
+      <br />
+      <b><font size="+2">Umar Farooq</font></b>
+      <br />
+      <sub>Senior Software & AI Engineer</sub>
+      <br />
+      <br />
+      <a href="https://itsumarfarooq.com">
+        <img src="https://img.shields.io/badge/Portfolio-itsumarfarooq.com-185CFF?style=for-the-badge&logo=google-chrome&logoColor=white" />
+      </a>
+      <a href="https://www.linkedin.com/in/umar444">
+        <img src="https://img.shields.io/badge/LinkedIn-umar444-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" />
+      </a>
+      <a href="https://github.com/umar-444">
+        <img src="https://img.shields.io/badge/GitHub-umar--444-181717?style=for-the-badge&logo=github&logoColor=white" />
+      </a>
+      <a href="mailto:Umar@itsumarfarooq.com">
+        <img src="https://img.shields.io/badge/Email-Umar%40itsumarfarooq-EA4335?style=for-the-badge&logo=gmail&logoColor=white" />
+      </a>
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+**Passionate about distributed systems, resilient financial engines, and state-of-the-art AI applications.**  
+Building high-impact software products with modern web technologies, strict mathematical guarantees, and delightful user experiences.
+
+*Explore more projects and insights at [itsumarfarooq.com](https://itsumarfarooq.com).*
+
+</div>
+
+---
+
 ## 🤝 Contributing
 
-We welcome contributions from developers of all skill levels!  
-Please read our [Contributing Guide](CONTRIBUTING.md) to understand:
-- The development setup and branching strategy (`Devbranch`).
-- Non-negotiable financial conservation invariants.
-- How to submit a Pull Request using our [PR Template](.github/PULL_REQUEST_TEMPLATE.md).
+Contributions, issues, and feature requests are welcome!  
+Feel free to check out the [issues page](https://github.com/umar-444/hisabo/issues).
 
-All participants are expected to adhere to the [Code of Conduct](CODE_OF_CONDUCT.md).
+1. Review our [Contributing Guide](CONTRIBUTING.md).
+2. Adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
+3. Open a Pull Request using our [PR Template](.github/PULL_REQUEST_TEMPLATE.md).
 
 ---
 
 ## 🔒 Security
 
-If you discover a security vulnerability in Hisabo, please disclose it responsibly by reviewing our [Security Policy](SECURITY.md) or contacting [security@hisabo.com](mailto:security@hisabo.com). Please **do not** file public issues for security vulnerabilities.
+For security vulnerabilities, please refer to our [Security Policy](SECURITY.md) or contact [Umar@itsumarfarooq.com](mailto:Umar@itsumarfarooq.com).
 
 ---
 
 ## 📄 License
 
-Hisabo is open-source software licensed under the [MIT License](LICENSE).
+Hisabo is open-source software licensed under the **[MIT License](LICENSE)**.
+
+<div align="center">
+
+**⭐ Star Hisabo on GitHub if you find it helpful! ⭐**
+
+Made with ❤️ by [Umar Farooq](https://itsumarfarooq.com)
+
+</div>

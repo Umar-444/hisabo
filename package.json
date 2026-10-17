@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
+  "author": {
+    "name": "Umar Farooq",
+    "email": "Umar@itsumarfarooq.com",
+    "url": "https://itsumarfarooq.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/umar-444/hisabo.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

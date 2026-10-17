@@ -20,7 +20,7 @@ The Hisabo team takes security vulnerabilities seriously. If you discover a pote
 **Please do not report security vulnerabilities through public GitHub issues.**
 
 Instead, please report security issues to:
-- **Email:** [security@hisabo.com](mailto:security@hisabo.com) (or via GitHub Private Vulnerability Reporting on this repository)
+- **Email:** [Umar@itsumarfarooq.com](mailto:Umar@itsumarfarooq.com) (or via GitHub Private Vulnerability Reporting on this repository)
 
 Please include as much of the following information as possible:
 - Type of issue (e.g., SQL injection, XSS, broken access control, CSRF)

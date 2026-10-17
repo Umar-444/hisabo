@@ -140,12 +140,16 @@ npm run lint
    - Open a PR against the `Devbranch` (or `main`) branch of `Umar-444/hisabo`.
    - Complete the PR template checklist describing your changes, motivation, and test verification.
 
+## 👨‍💻 Project Maintainer
+
+Hisabo was created and is actively maintained by **[Umar Farooq](https://itsumarfarooq.com)** (Senior Software and AI Engineer).
+- **Portfolio & Blog:** [itsumarfarooq.com](https://itsumarfarooq.com)
+- **LinkedIn:** [linkedin.com/in/umar444](https://www.linkedin.com/in/umar444)
+- **GitHub:** [@umar-444](https://github.com/umar-444)
+- **Email:** [Umar@itsumarfarooq.com](mailto:Umar@itsumarfarooq.com)
+
+Feel free to connect, ask questions, or discuss architectural improvements directly!
+
 ---
-
-## 💬 Community & Help
-
-If you run into issues, have questions, or want to propose an RFC:
-- Open a discussion or issue on GitHub.
-- Be respectful and constructive — see our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 Thank you for helping make Hisabo the best shared-expense platform in the world! 🚀
