@@ -3,9 +3,13 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  "postgresql://neondb_owner:npg_WHpvsM3ajn0e@ep-small-waterfall-b4kfrb0r-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error(
+    "DATABASE_URL environment variable is missing. Please provide a valid PostgreSQL connection string in .env.local."
+  );
+}
 
 // Cache sql client across hot-reloads in development
 const globalForDb = globalThis as unknown as {
