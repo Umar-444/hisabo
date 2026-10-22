@@ -7,6 +7,11 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   let dbStatus = "unknown";
   let dbError: string | null = null;
+  const envCheck = {
+    hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+    databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 14) + "..." : "missing",
+    nodeEnv: process.env.NODE_ENV,
+  };
 
   try {
     const start = Date.now();
@@ -21,7 +26,7 @@ export async function GET() {
     status: dbError ? "degraded" : "ok",
     database: dbStatus,
     dbError,
+    envCheck,
     timestamp: new Date().toISOString(),
   });
 }
-

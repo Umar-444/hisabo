@@ -3,13 +3,13 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
-// Cache sql client across hot-reloads and requests
+// Cache db client across requests and hot-reloads
 const globalForDb = globalThis as unknown as {
-  sql: any;
+  db: ReturnType<typeof drizzle<typeof schema>> | undefined;
   dbUrl: string | undefined;
 };
 
-function getSql(): any {
+function getDb(): ReturnType<typeof drizzle<typeof schema>> {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
@@ -18,37 +18,29 @@ function getSql(): any {
     );
   }
 
-  if (globalForDb.sql && globalForDb.dbUrl === connectionString) {
-    return globalForDb.sql;
+  if (globalForDb.db && globalForDb.dbUrl === connectionString) {
+    return globalForDb.db;
   }
 
-  const client = neon(connectionString);
-  globalForDb.sql = client;
+  const sql = neon(connectionString);
+  const client = drizzle(sql, { schema });
+
+  // Graceful transaction fallback for neon-http driver on Cloudflare Workers / Serverless
+  (client as any).transaction = async function (cb: (tx: any) => Promise<any>) {
+    return await cb(this);
+  };
+
+  globalForDb.db = client;
   globalForDb.dbUrl = connectionString;
   return client;
 }
 
-// Proxy neon client lazily so process.env.DATABASE_URL is accessed at query runtime
-// rather than top-level module evaluation time (critical for Cloudflare Workers / OpenNext)
-const sqlProxy = new Proxy(function () {} as any, {
-  apply(_target, thisArg, argArray) {
-    return (getSql() as any).apply(thisArg, argArray);
-  },
+// Lazy Proxy for db: prevents drizzle() or neon() from evaluating at top-level module load time,
+// ensuring process.env.DATABASE_URL is accessed only when a request arrives (critical for Cloudflare Workers / OpenNext).
+export const db: ReturnType<typeof drizzle<typeof schema>> = new Proxy({} as any, {
   get(_target, prop, receiver) {
-    const target = getSql() as any;
-    const value = Reflect.get(target, prop, receiver);
-    return typeof value === "function" ? value.bind(target) : value;
+    const realDb = getDb() as any;
+    const value = Reflect.get(realDb, prop, receiver);
+    return typeof value === "function" ? value.bind(realDb) : value;
   },
 });
-
-export const db = drizzle(sqlProxy as any, { schema });
-
-// Graceful transaction fallback for neon-http driver on Cloudflare Workers / Serverless
-(db as any).transaction = async function (
-  cb: (tx: any) => Promise<any>
-) {
-  // neon-http executes queries over stateless HTTP fetch and does not support multi-statement interactive transactions.
-  // Passing the db client instance as tx executes statements sequentially with full compatibility.
-  return await cb(this);
-};
-
