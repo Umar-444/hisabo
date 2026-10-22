@@ -122,14 +122,13 @@ export default async function DashboardPage() {
         )
         .orderBy(desc(expenses.createdAt))
         .limit(10);
-
       recentExpenses = rawRecent
         .filter((e) => {
           const userGrp = userGroups.find((g) => g.id === e.groupId);
           if (!userGrp) return false;
           const isPrivileged = userGrp.role === "owner" || userGrp.role === "admin";
           if (isPrivileged || e.paidBy === session.id) return true;
-          if (userGrp.joinedAt && e.createdAt >= userGrp.joinedAt) return true;
+          if (userGrp.joinedAt && new Date(e.createdAt).getTime() >= new Date(userGrp.joinedAt).getTime()) return true;
           return false;
         })
         .slice(0, 6);
@@ -137,6 +136,15 @@ export default async function DashboardPage() {
   } catch (e) {
     console.error("Error loading expenses:", e);
   }
+
+  const toIso = (val: unknown): string => {
+    if (val instanceof Date) return val.toISOString();
+    if (typeof val === "string") {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? val : d.toISOString();
+    }
+    return new Date().toISOString();
+  };
 
   // Fetch pending actions / settlements needing attention
   const pendingActions = await getPendingActionsQuery(session.id);
@@ -154,7 +162,7 @@ export default async function DashboardPage() {
     status: st.status,
     paymentMethod: st.paymentMethod,
     note: st.note,
-    createdAt: st.createdAt.toISOString(),
+    createdAt: toIso(st.createdAt),
   }));
 
   const serializedDisputes = pendingActions.activeDisputes.map((st) => ({
@@ -171,13 +179,13 @@ export default async function DashboardPage() {
     status: st.status,
     paymentMethod: st.paymentMethod,
     note: st.note,
-    createdAt: st.createdAt.toISOString(),
+    createdAt: toIso(st.createdAt),
   }));
 
   const activeRequests = await getActivePaymentRequestsMapQuery(session.id);
   const serializedRequestsMap: Record<string, string> = {};
   for (const [k, v] of Object.entries(activeRequests)) {
-    serializedRequestsMap[k] = v.toISOString();
+    serializedRequestsMap[k] = toIso(v);
   }
 
   const adminGroupIds = new Set(
