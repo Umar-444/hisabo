@@ -17,7 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { getAggregatedBalancesQuery } from "@/features/balances";
+import { getAggregatedBalancesQuery, AggregatedBalancesResult } from "@/features/balances";
 import { fromMinorUnits } from "@/lib/money";
 import {
   DashboardBalanceHero,
@@ -36,7 +36,28 @@ export default async function DashboardPage() {
   }
 
   // Fetch live aggregated balance with multi-currency segregation
-  const aggregatedBalances = await getAggregatedBalancesQuery(session.id);
+  let aggregatedBalances: AggregatedBalancesResult = {
+    totalCreditMinor: BigInt(0),
+    totalDebitMinor: BigInt(0),
+    netTotalMinor: BigInt(0),
+    currency: "SAR",
+    currencies: ["SAR"],
+    byCurrency: {
+      SAR: {
+        currency: "SAR",
+        totalCreditMinor: BigInt(0),
+        totalDebitMinor: BigInt(0),
+        netTotalMinor: BigInt(0),
+      },
+    },
+    peerBalances: [],
+  };
+
+  try {
+    aggregatedBalances = await getAggregatedBalancesQuery(session.id);
+  } catch (e) {
+    console.error("Error loading aggregated balances:", e);
+  }
 
   // Safely serialize byCurrency for Client Component
   const serializedByCurrency: Record<string, SerializedCurrencySummary> = {};
@@ -147,7 +168,17 @@ export default async function DashboardPage() {
   };
 
   // Fetch pending actions / settlements needing attention
-  const pendingActions = await getPendingActionsQuery(session.id);
+  let pendingActions = {
+    pendingToConfirm: [] as any[],
+    activeDisputes: [] as any[],
+    totalCount: 0,
+  };
+  try {
+    pendingActions = await getPendingActionsQuery(session.id);
+  } catch (e) {
+    console.error("Error loading pending actions:", e);
+  }
+
   const serializedPending = pendingActions.pendingToConfirm.map((st) => ({
     id: st.id,
     groupId: st.groupId,
@@ -182,7 +213,13 @@ export default async function DashboardPage() {
     createdAt: toIso(st.createdAt),
   }));
 
-  const activeRequests = await getActivePaymentRequestsMapQuery(session.id);
+  let activeRequests: Record<string, Date> = {};
+  try {
+    activeRequests = await getActivePaymentRequestsMapQuery(session.id);
+  } catch (e) {
+    console.error("Error loading active payment requests:", e);
+  }
+
   const serializedRequestsMap: Record<string, string> = {};
   for (const [k, v] of Object.entries(activeRequests)) {
     serializedRequestsMap[k] = toIso(v);
