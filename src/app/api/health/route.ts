@@ -7,11 +7,26 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   let dbStatus = "unknown";
   let dbError: string | null = null;
+  let cfEnvKeys: string[] = [];
+  let cfHasDbUrl = false;
+
+  try {
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const cf = await getCloudflareContext({ async: true });
+    if (cf?.env) {
+      cfEnvKeys = Object.keys(cf.env).sort();
+      cfHasDbUrl = Boolean((cf.env as any).DATABASE_URL);
+    }
+  } catch (e: any) {
+    cfEnvKeys = ["error: " + (e?.message || String(e))];
+  }
+
   const envCheck = {
-    hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
-    databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 14) + "..." : "missing",
+    hasProcessDatabaseUrl: Boolean(process.env.DATABASE_URL),
+    hasCfContextDatabaseUrl: cfHasDbUrl,
+    cfBindings: cfEnvKeys,
     nodeEnv: process.env.NODE_ENV,
-    availableEnvKeys: Object.keys(process.env).sort(),
+    processEnvKeys: Object.keys(process.env).sort(),
   };
 
   try {

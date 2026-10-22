@@ -10,7 +10,20 @@ const globalForDb = globalThis as unknown as {
 };
 
 function getDb(): ReturnType<typeof drizzle<typeof schema>> {
-  const connectionString = process.env.DATABASE_URL;
+  let connectionString = process.env.DATABASE_URL;
+
+  // Fallback: check Cloudflare runtime context if process.env is not populated
+  if (!connectionString) {
+    try {
+      const { getCloudflareContext } = require("@opennextjs/cloudflare");
+      const cf = getCloudflareContext();
+      if (cf?.env?.DATABASE_URL && typeof cf.env.DATABASE_URL === "string") {
+        connectionString = cf.env.DATABASE_URL;
+      }
+    } catch {
+      // not in cloudflare worker or context unavailable
+    }
+  }
 
   if (!connectionString) {
     throw new Error(
@@ -36,7 +49,7 @@ function getDb(): ReturnType<typeof drizzle<typeof schema>> {
 }
 
 // Lazy Proxy for db: prevents drizzle() or neon() from evaluating at top-level module load time,
-// ensuring process.env.DATABASE_URL is accessed only when a request arrives (critical for Cloudflare Workers / OpenNext).
+// ensuring connectionString is accessed only when a request arrives (critical for Cloudflare Workers / OpenNext).
 export const db: ReturnType<typeof drizzle<typeof schema>> = new Proxy({} as any, {
   get(_target, prop, receiver) {
     const realDb = getDb() as any;
