@@ -7,7 +7,7 @@ const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
   throw new Error(
-    "DATABASE_URL environment variable is missing. Please provide a valid PostgreSQL connection string in .env.local."
+    "Missing DATABASE_URL. Please set DATABASE_URL in your .env.local file for local development, or in your hosting platform environment variables for production."
   );
 }
 
