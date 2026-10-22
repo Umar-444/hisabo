@@ -11,6 +11,7 @@ export async function GET() {
     hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
     databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 14) + "..." : "missing",
     nodeEnv: process.env.NODE_ENV,
+    availableEnvKeys: Object.keys(process.env).sort(),
   };
 
   try {
