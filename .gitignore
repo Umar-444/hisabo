@@ -51,3 +51,5 @@ next-env.d.ts
 # opennext / cloudflare
 .open-next/
 .wrangler/
+build-env.generated.*
+src/app/(backend)/_lib/db/build-env.generated.json

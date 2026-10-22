@@ -11,7 +11,15 @@ export interface UserSession {
 }
 
 const COOKIE_NAME = "hisabo_user_session";
-const SECRET = process.env.AUTH_SECRET || "hisabo-super-secret-user-key-2026";
+let fallbackSecret = "hisabo-super-secret-user-key-2026";
+try {
+  const buildEnv = require("@/app/(backend)/_lib/db/build-env.generated.json");
+  if (buildEnv?.AUTH_SECRET) {
+    fallbackSecret = buildEnv.AUTH_SECRET;
+  }
+} catch {}
+
+const SECRET = process.env.AUTH_SECRET || fallbackSecret;
 
 function sign(payload: string): string {
   const hmac = crypto.createHmac("sha256", SECRET);

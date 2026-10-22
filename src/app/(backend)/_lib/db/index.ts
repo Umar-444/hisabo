@@ -12,7 +12,7 @@ const globalForDb = globalThis as unknown as {
 function getDb(): ReturnType<typeof drizzle<typeof schema>> {
   let connectionString = process.env.DATABASE_URL;
 
-  // Fallback: check Cloudflare runtime context if process.env is not populated
+  // Fallback 1: check Cloudflare runtime context if process.env is not populated
   if (!connectionString) {
     try {
       const { getCloudflareContext } = require("@opennextjs/cloudflare");
@@ -22,6 +22,18 @@ function getDb(): ReturnType<typeof drizzle<typeof schema>> {
       }
     } catch {
       // not in cloudflare worker or context unavailable
+    }
+  }
+
+  // Fallback 2: check build-time environment bridged during Cloudflare Workers build
+  if (!connectionString) {
+    try {
+      const buildEnv = require("./build-env.generated.json");
+      if (buildEnv?.DATABASE_URL && typeof buildEnv.DATABASE_URL === "string") {
+        connectionString = buildEnv.DATABASE_URL;
+      }
+    } catch {
+      // no build env generated or file unavailable
     }
   }
 

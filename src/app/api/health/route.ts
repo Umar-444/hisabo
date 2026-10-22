@@ -21,9 +21,16 @@ export async function GET() {
     cfEnvKeys = ["error: " + (e?.message || String(e))];
   }
 
+  let hasBuildEnvDbUrl = false;
+  try {
+    const buildEnv = require("@/app/(backend)/_lib/db/build-env.generated.json");
+    hasBuildEnvDbUrl = Boolean(buildEnv?.DATABASE_URL);
+  } catch {}
+
   const envCheck = {
     hasProcessDatabaseUrl: Boolean(process.env.DATABASE_URL),
     hasCfContextDatabaseUrl: cfHasDbUrl,
+    hasBuildEnvDatabaseUrl: hasBuildEnvDbUrl,
     cfBindings: cfEnvKeys,
     nodeEnv: process.env.NODE_ENV,
     processEnvKeys: Object.keys(process.env).sort(),
